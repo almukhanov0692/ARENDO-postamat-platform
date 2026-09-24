@@ -15,6 +15,8 @@ Android gateway installed on the RK3568 postamat controller.
 
 The backend WebSocket client, persistent offline queue and production configuration store are intentionally the next milestone. Their contract is already documented in `../docs/protocols/backend-v1.md`.
 
+The foundation build supports Android API 21 and newer; the connected RK3568 test unit reports API 25.
+
 ## Build
 
 ```powershell
@@ -33,4 +35,3 @@ Debug APK: `app/build/outputs/apk/debug/app-debug.apk`.
 | Outputs | Y1-Y4 from zero-based address `0` |
 
 These values will move to validated persistent configuration before production use.
-
