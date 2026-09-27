@@ -6,9 +6,9 @@ These items must be agreed before the corresponding implementation is treated as
 |---|---|---|---|
 | Q01 | Which Android build/image runs on the RK3568 controller? | Nursultan / customer | Production installation |
 | Q02 | Which USB-RS485 converter VID/PID and serial chipset are approved? | Nursultan | Production hardware list |
-| Q03 | Confirm production Modbus function codes, zero/one-based addressing and input polarity. | Nursultan / customer | Hardware acceptance |
+| Q03 | Confirm from the selected module manuals and bench tests the Modbus functions, register/coil addresses, zero/one-based convention, sensor polarity, relay polarity/pulse and error behavior. | Nursultan / customer | Stage 1 production map and hardware acceptance |
 | Q04 | Minimum Android version and required phone/tablet device matrix? | Nursultan / customer | Release acceptance T24 |
-| Q05 | Exact input/output module models and final address plan beyond the current X1-X4/Y1-Y4 stand? | Nursultan / customer | Hardware purchase |
+| Q05 | Exact I/O module SKUs/revisions and quantity for the 14-door stand and 28-door target; how modules/cabinets chain and are addressed? | Nursultan / customer | Stage 1 hardware freeze and purchase |
 | Q06 | Wi-Fi/4G failover policy and thresholds? Deferred; gateway currently uses any working Android network. | Nursultan / Sarvar | T16 |
 | Q07 | Event-log capacity and retention/full policy? | Nursultan / Sarvar | C05 |
 | Q08 | Backend signing/key provisioning and rotation format? | Nursultan / Sarvar | A03-A05 |

@@ -4,7 +4,14 @@ This file summarizes the implementation requirements from ARENDO technical speci
 
 ## Scope
 
-- Up to 32 channels; normal configuration up to four cabinets with seven cells each.
+- Product target: up to 32 logical channels; normal installed configuration is up to four cabinets
+  with seven real cells each (28 doors). Four reserved channels are capacity only and must not be
+  displayed as installed cells.
+- The first physical acceptance stand is the master section plus two seven-cell modules (14 real
+  locks and door sensors). Passing the 14-cell test does not prove the 28-cell maximum.
+- The existing X1-X4/Y1-Y4 button/LED mapping is a four-cell simulator, not the production I/O map.
+- Production Modbus module models, module count, topology, address plan, register/function profile
+  and signal polarity must be taken from the approved equipment manuals and verified on hardware.
 - Indoor installation at or above +5 C.
 - Wi-Fi primary connectivity and 4G fallback.
 - No backup power; closed doors remain locked without power.
@@ -43,10 +50,23 @@ This file summarizes the implementation requirements from ARENDO technical speci
 - V01-V02: bundled recorded phrases and deterministic audio priority over advertising.
 - R01-R04: local playlist, offline playback, safe file replacement and built-in ARENDO fallback media.
 
+## Location
+
+The preferred design is device GPS → coordinates → server-confirmed location binding, retaining
+server-side manual entry/correction. Indoor accuracy must be checked in the target building. GPS
+may be replaced by the manual server-side path only with customer approval.
+
 ## Delivery
 
 - Reproducible source builds and install packages.
 - Versioned dependencies and configuration.
 - Protocols, assembly/operation/recovery instructions and test reports.
 - No dependency on a personal AI account or unavailable private service.
+
+## Implementation sequence
+
+Stages, exit gates and current evidence are tracked in
+[`implementation-plan.md`](implementation-plan.md). The original acceptance test IDs T01-T26 are
+listed in [`testing/acceptance-matrix.md`](testing/acceptance-matrix.md); the matrix status is not
+inferred from a simulator-only demonstration.
 

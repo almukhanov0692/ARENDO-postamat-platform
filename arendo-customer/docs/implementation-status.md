@@ -6,6 +6,10 @@ Repository: `almukhanov0692/ARENDO-postamat-platform`
 This document is the handoff summary for the customer and backend team. It separates the parts that
 were demonstrated on the laboratory stand from the work that is still required before production.
 
+The staged implementation sequence and exit gates are in
+[`implementation-plan.md`](implementation-plan.md). Acceptance IDs in the matrix follow the source
+specification; they are not replaced with locally invented test numbering.
+
 ## Demonstrated and ready for review
 
 ### Repository and source foundation
@@ -106,7 +110,7 @@ See the protocol and test documents before changing field names:
 
 ## Evidence and scope note
 
-The four-button stand is valid evidence for the logical MVP flow `command -> output -> input ->
-status`. It is not evidence of production lock security, door-sensor accuracy, payment processing,
-QR authorization, GPS accuracy, Bluetooth authorization or update rollback. Those require their own
-hardware, backend and acceptance tests.
+The four-button stand is valid evidence for a simulated logical flow `command -> output -> input ->
+status` only. It is not evidence for T01's 14 real doors or production lock security, door-sensor
+accuracy, payment processing, QR authorization, GPS accuracy, Bluetooth authorization or update
+rollback. Those require their own hardware, backend and acceptance tests.

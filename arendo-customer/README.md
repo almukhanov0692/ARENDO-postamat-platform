@@ -9,7 +9,8 @@ The repository is based on the technical specification v1.1 dated 21 September 2
 MVP foundation validated on the laboratory four-cell stand. The project is not production-ready and
 must not be used to operate public postamats yet. See
 [`docs/implementation-status.md`](docs/implementation-status.md) for the current delivery status and
-the remaining work.
+the remaining work, and [`docs/implementation-plan.md`](docs/implementation-plan.md) for the staged
+implementation sequence and exit gates.
 
 ## Components
 
@@ -17,7 +18,7 @@ the remaining work.
 - `controller/` - hardware integration notes and future native controller services.
 - `technician-android/` - reserved for the separate technician application defined in the specification.
 - `docs/protocols/` - versioned backend and USB contracts.
-- `docs/testing/` - acceptance traceability for tests T01-T26.
+- `docs/testing/` - acceptance traceability for the original tests T01-T26 in the specification.
 - `docs/decisions/` - architecture decisions and unresolved choices.
 
 ## Product boundary
@@ -39,7 +40,8 @@ The technician application is a local service tool. In version 1, state-changing
 
 The working WebSocket/local-server prototype was validated separately during the MVP demonstration.
 The production-safe transport, durable offline queue and signed command handling still have to be
-merged into this canonical customer-facing Android module.
+merged into this canonical customer-facing Android module. The four-cell simulator is not the
+14-door first hardware acceptance stand and does not prove 28-cell production capacity.
 
 ## Android build
 
