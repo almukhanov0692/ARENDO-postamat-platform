@@ -8,7 +8,7 @@ prototype or subset has evidence; it does not satisfy the full test.
 
 | Test | Acceptance scope | Owner(s) | Status | Evidence / remaining gap |
 |---|---|---|---|---|
-| T01 | Two seven-cell modules; address each of 14 real locks and confirm door sensors, with no other lock actuating. | Nursultan | not started | Current four-button/LED simulator only; real 14-lock stand not evidenced. |
+| T01 | Two seven-cell modules; address each of 14 real locks and confirm door sensors, with no other lock actuating. | Nursultan | not started | Current software is a four-channel simulator; a 10-relay exhibition build is planned, but the required 14-real-door stand is not evidenced. |
 | T02 | Add the second cabinet in the chain without reworking existing harnesses; addresses do not conflict and inventory updates. | Nursultan | not started | Production topology and module/address plan not approved. |
 | T03 | Calculations and a verification plan for 28 physical cells and 32 logical channels. | Nursultan | partial | Requirement documented; approved electrical calculations and validated production map remain. |
 | T04 | Power loss keeps closed doors locked; restart reads sensors and saved blocks without spontaneous opening. | Nursultan | not started | Real lock power-loss/restart acceptance not evidenced. |

@@ -18,6 +18,9 @@ The current four-point client profile is compatible with BSM-1616RB manual funct
 write (`0x0F`) and production cell configuration are not yet integrated. See
 `../docs/hardware/bsm-1616rb.md` and `../docs/protocols/modbus-gateway-v1.md`.
 
+The exhibition setup is planned for 10 relay channels; the current app still displays and polls four
+simulator channels. Do not treat the 10-channel exhibit as the TЗ's 14-real-door acceptance test.
+
 The backend WebSocket client, persistent offline queue and production configuration store are
 intentionally the next milestone. Their contract is documented in `../docs/protocols/backend-v1.md`.
 

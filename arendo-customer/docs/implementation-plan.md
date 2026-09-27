@@ -8,6 +8,8 @@ gates explicit. A prototype or simulator result is not a production acceptance r
 
 - First physical acceptance stand: one master section and two seven-cell modules — 14 real locks
   with door sensors.
+- Interim exhibition build: 10 relay channels, as confirmed by Nursultan. This is a demonstration
+  configuration only and does not replace the 14-door acceptance stand.
 - Product target: up to 28 installed cells across four seven-cell cabinets, with capacity for 32
   logical channels. Four reserve channels are not installed cells and must not be shown as doors.
 - Device platform: RK3568-class Android controller, USB host, USB-RS485 and Modbus RTU. Exact I/O
@@ -24,7 +26,7 @@ gates explicit. A prototype or simulator result is not a production acceptance r
 | Stage | Work and specification trace | Exit gate |
 |---|---|---|
 | 0. Freeze the baseline | Reconcile the source requirements, current code, hardware list and server contract. Resolve the I/O module models/count, topology, Modbus addressing/polarity, sensor behavior, device identity and command security. | Approved hardware bill of materials and wiring/map appendix; versioned server contract and named owners for unresolved decisions. No guessed production addresses. |
-| 1. Real I/O and cabinet scale | Implement a configurable logical-cell-to-I/O map, serialized Modbus access, module health and honest `open`/`closed`/`unknown` reporting. Validate power, cabling, failure isolation and restart behavior. H01-H07; T01-T05. | 14 real cells individually tested; adding the second cabinet does not require reworking existing harnesses; 28-cell design and 32-channel method documented; power/recovery evidence recorded. |
+| 1. Real I/O and cabinet scale | First bring up the 10-channel exhibition configuration, then extend and validate the formal 14-door stand. Implement a configurable logical-cell-to-I/O map, serialized Modbus access, module health and honest `open`/`closed`/`unknown` reporting. Validate power, cabling, failure isolation and restart behavior. H01-H07; T01-T05. | Exhibition demo reports only its 10 configured channels. Separately, 14 real cells pass T01; adding the second cabinet does not require reworking existing harnesses; 28-cell design and 32-channel method documented; power/recovery evidence recorded. |
 | 2. Device ↔ backend contract | Integrate the WebSocket client into the canonical Android gateway. Implement device authentication, command lifecycle, expiry/session checks, idempotency, heartbeat/offline status, durable event queue, acknowledgements, conflict serialization and agreed Wi-Fi/4G behavior. C01-C09; protocol appendix; T13-T16. | Backend and device pass end-to-end command → physical output → sensor state → acknowledged event, plus duplicate, expiry, offline, reconnect and stale-command cases. |
 | 3. Technician USB and service mode | Build the separate technician Android app; server login/assignment and renewable device-specific 24-hour grant; mutual USB identity; inspection mode; return flow; local blocks; service reason/audit; safe USB disconnect/restart handling. A01-A07, M01-M09; T06-T12 and T15. | Authorized and unauthorized USB cases pass; entering/leaving inspection, return during inspection, offline service, persistent blocks and command recovery pass on supported Android devices. |
 | 4. Device services | Implement signed update selection/install/rollback/recovery, bundled voice prompts with audio priority, cached advertising playlist/fallback, and GPS with server-confirmed binding (or an explicitly approved manual alternative). U01-U06, V01-V02, R01-R04, location requirement; T17-T23. | Each service passes its offline, interrupted-power/network and recovery cases on target hardware; unsupported data is reported as unavailable, not fabricated. |
@@ -43,7 +45,9 @@ gates explicit. A prototype or simulator result is not a production acceptance r
 ## Current position
 
 Stage 0 is in progress. The official repository contains a buildable RK3568 Android gateway and a
-four-cell Modbus simulator path. A BSM-1616RB manual is now available and documents the candidate
+four-cell Modbus simulator path. Nursultan reports 10 relay channels for the exhibition build; the
+canonical app is still fixed at four channels, so the 10-channel profile is not yet integrated or
+accepted. A BSM-1616RB manual is now available and documents the candidate
 16-in/16-out map and Modbus functions; the physical revision/output type, unique module addresses,
 door wiring, power calculations and 14-channel field map still need confirmation. A WebSocket/local-
 server demonstration was exercised separately, but its production-safe implementation is not yet
