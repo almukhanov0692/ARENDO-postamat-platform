@@ -49,9 +49,10 @@ specification; they are not replaced with locally invented test numbering.
   `D1..D4 closed`.
 - The output is switched off after the close transition.
 - The stand is a simulator. It does not prove a production lock sensor or a real door sensor.
-- Nursultan reports 10 relay channels for the interim exhibition build. The canonical Android app
-  is still fixed to four channels; the 10-channel exhibition mapping and feedback have not yet been
-  integrated or acceptance-tested. This demo does not meet T01's 14-real-door requirement.
+- The customer has approved 10 relay channels for the interim exhibition build, according to
+  Nursultan. The canonical Android app is still fixed to four channels; the 10-channel exhibition
+  mapping and feedback have not yet been integrated or acceptance-tested. This demo does not meet
+  T01's 14-real-door requirement or replace the 28-door product target.
 
 ### Backend integration prototype
 

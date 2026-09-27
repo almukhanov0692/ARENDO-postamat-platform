@@ -85,10 +85,11 @@ must be separately approved and tested. Reserve logical capacity 29-32 is not a 
 physical doors exist. Configuration validation must reject duplicate cell IDs,
 duplicate/conflicting module addresses and mappings outside the approved hardware profile.
 
-The interim exhibition build is expected to use 10 relay channels. It can use the first ten logical
-channels of the BSM profile once the physical wiring map is confirmed. The current canonical Android
-screen/polling loop is still limited to four channels, so the 10-channel configuration requires a
-software change and separate verification.
+The customer has approved an interim exhibition build with 10 relay channels, according to
+Nursultan. It can use the first ten logical channels of the BSM profile once the physical wiring map
+is confirmed. The current canonical Android screen/polling loop is still limited to four channels,
+so the 10-channel configuration requires a software change and separate verification. This
+exhibition approval does not replace the TЗ's 14-door first acceptance stand or 28-door target.
 
 ## Safety before production use
 

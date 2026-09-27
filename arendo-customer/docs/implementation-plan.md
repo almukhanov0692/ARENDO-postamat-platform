@@ -8,8 +8,9 @@ gates explicit. A prototype or simulator result is not a production acceptance r
 
 - First physical acceptance stand: one master section and two seven-cell modules — 14 real locks
   with door sensors.
-- Interim exhibition build: 10 relay channels, as confirmed by Nursultan. This is a demonstration
-  configuration only and does not replace the 14-door acceptance stand.
+- Interim exhibition build: 10 relay channels, approved by the customer according to Nursultan.
+  This is a demonstration configuration only and does not replace the 14-door acceptance stand or
+  the 28-door product target.
 - Product target: up to 28 installed cells across four seven-cell cabinets, with capacity for 32
   logical channels. Four reserve channels are not installed cells and must not be shown as doors.
 - Device platform: RK3568-class Android controller, USB host, USB-RS485 and Modbus RTU. Exact I/O
@@ -45,9 +46,9 @@ gates explicit. A prototype or simulator result is not a production acceptance r
 ## Current position
 
 Stage 0 is in progress. The official repository contains a buildable RK3568 Android gateway and a
-four-cell Modbus simulator path. Nursultan reports 10 relay channels for the exhibition build; the
-canonical app is still fixed at four channels, so the 10-channel profile is not yet integrated or
-accepted. A BSM-1616RB manual is now available and documents the candidate
+four-cell Modbus simulator path. The customer has approved a 10-relay exhibition build according to
+Nursultan; the canonical app is still fixed at four channels, so the 10-channel profile is not yet
+integrated or acceptance-tested. A BSM-1616RB manual is now available and documents the candidate
 16-in/16-out map and Modbus functions; the physical revision/output type, unique module addresses,
 door wiring, power calculations and 14-channel field map still need confirmation. A WebSocket/local-
 server demonstration was exercised separately, but its production-safe implementation is not yet

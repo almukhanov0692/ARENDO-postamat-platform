@@ -9,8 +9,9 @@ This file summarizes the implementation requirements from ARENDO technical speci
   displayed as installed cells.
 - The first physical acceptance stand is the master section plus two seven-cell modules (14 real
   locks and door sensors). Passing the 14-cell test does not prove the 28-cell maximum.
-- The current exhibition version is planned for 10 relay channels. This is an interim demo size;
-  it does not change the 14-door first acceptance stand or the 28-door product target.
+- The customer has approved an interim exhibition version with 10 relay channels (approval reported
+  by Nursultan). This exhibition scope does not change the 14-door first acceptance stand or the
+  28-door product target in the technical specification.
 - BSM-1616RB has been identified as the candidate Modbus I/O module. The supplied manual lists
   16 digital inputs and 16 outputs; one unit is sufficient by channel count for 14 doors and two
   for 28 doors plus four reserve channels, assuming one input and one output per door. Physical
