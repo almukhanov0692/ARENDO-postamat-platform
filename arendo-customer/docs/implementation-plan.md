@@ -43,12 +43,15 @@ gates explicit. A prototype or simulator result is not a production acceptance r
 ## Current position
 
 Stage 0 is in progress. The official repository contains a buildable RK3568 Android gateway and a
-four-cell Modbus simulator path. A WebSocket/local-server demonstration was exercised separately,
-but its production-safe implementation is not yet merged into the canonical gateway. No 14-door
-physical acceptance, approved production I/O map, technician grant flow, durable offline event
-queue, update/rollback, GPS, advertising/audio or final handover has been demonstrated yet.
+four-cell Modbus simulator path. A BSM-1616RB manual is now available and documents the candidate
+16-in/16-out map and Modbus functions; the physical revision/output type, unique module addresses,
+door wiring, power calculations and 14-channel field map still need confirmation. A WebSocket/local-
+server demonstration was exercised separately, but its production-safe implementation is not yet
+merged into the canonical gateway. No 14-door physical acceptance, technician grant flow, durable
+offline event queue, update/rollback, GPS, advertising/audio or final handover has been demonstrated.
 
-The next implementation gate is to freeze the real I/O module models and map, then build the
-configurable hardware gateway against their manuals. The test matrix in
+The next implementation gate is to confirm the physical BSM-1616RB revision and output type, set
+unique RS-485 addresses where multiple modules are used, and approve the door/sensor/power map;
+then build and commission the scalable hardware gateway. The test matrix in
 [`testing/acceptance-matrix.md`](testing/acceptance-matrix.md) tracks evidence using the original
 T01-T26 identifiers from the specification.

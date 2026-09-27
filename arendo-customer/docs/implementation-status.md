@@ -24,6 +24,11 @@ specification; they are not replaced with locally invented test numbering.
 
 - Android gateway connects to the I/O module through USB host and a USB-RS485 converter.
 - Baseline serial settings are slave `1`, `9600 8N1`.
+- The supplied BSM-1616RB manual matches the baseline and documents 16 inputs and 16 outputs;
+  one module has enough channel count for the first 14-door stand. The manual's model row describes
+  outputs generically as relay/transistor, so the physical output implementation and revision must
+  be confirmed before connecting lock loads. Its B2 relay diagram uses grouped dry contacts, not
+  powered Y outputs.
 - Four-cell mapping is fixed for the current stand:
 
   | Cell | Physical input | Physical output |

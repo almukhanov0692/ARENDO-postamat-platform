@@ -9,6 +9,11 @@ This file summarizes the implementation requirements from ARENDO technical speci
   displayed as installed cells.
 - The first physical acceptance stand is the master section plus two seven-cell modules (14 real
   locks and door sensors). Passing the 14-cell test does not prove the 28-cell maximum.
+- BSM-1616RB has been identified as the candidate Modbus I/O module. The supplied manual lists
+  16 digital inputs and 16 outputs; one unit is sufficient by channel count for 14 doors and two
+  for 28 doors plus four reserve channels, assuming one input and one output per door. Physical
+  output type/revision, cabinet topology, addresses and electrical suitability still require
+  commissioning.
 - The existing X1-X4/Y1-Y4 button/LED mapping is a four-cell simulator, not the production I/O map.
 - Production Modbus module models, module count, topology, address plan, register/function profile
   and signal polarity must be taken from the approved equipment manuals and verified on hardware.

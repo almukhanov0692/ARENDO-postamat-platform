@@ -1,8 +1,9 @@
 # Android Modbus gateway profile v1
 
-Status: laboratory four-cell profile only. This is not the approved production hardware map.
-The production I/O module manuals, module count, addressing, topology and electrical design remain
-to be approved before deployment.
+Status: the four-cell laboratory map is implemented. The supplied BSM-1616RB manual provides a
+candidate 16-in/16-out Modbus profile; the physical board revision, output implementation, full
+door map, topology and electrical design still require commissioning before production use. See
+[`../hardware/bsm-1616rb.md`](../hardware/bsm-1616rb.md).
 
 ## Physical path
 
@@ -27,9 +28,22 @@ Baseline serial parameters are configurable. The current stand uses slave `1`, `
 - Input and output base addresses are configuration values, not backend fields.
 - Input polarity is configuration. The four-button stand is calibrated during installation.
 
-These addresses describe only the currently demonstrated module. Do not copy them to a different
-module or infer that production cells 05-32 use consecutive addresses or the same Modbus function
-codes.
+For the supplied BSM-1616RB manual, the same zero-based input/output channel numbering is specified
+for up to 16 points: X1/Y1 use address 0 through X16/Y16 at address 15. Production use still
+requires confirming the physical module/revision, fitted output type, wiring and cell map. Do not
+infer that modules beyond BSM-1616RB use the same functions or addresses.
+
+The BSM manual also specifies function `0x01` to read output states and function `0x0F` to write
+multiple outputs. The current Android client implements input read `0x02` and single-output write
+`0x05`; output-state readback and multi-output write are not yet integrated.
+
+For BSM-1616RB, the manual says `S/S` is the digital-input common: connect it to `VCC` for
+active-low inputs, or to `GND` for active-high inputs. Do not leave it floating; verify that the
+selected polarity matches the actual door sensor/contact wiring.
+
+Each BSM module has its own 0-15 input/output point range. If multiple modules share an RS-485 bus,
+the slave ID distinguishes modules; the point address alone does not identify a locker. Do not
+assume logical cell numbering or cabinet wiring until the commissioned map is approved.
 
 ## Current stand interpretation
 
@@ -64,10 +78,12 @@ Before implementing production polling, record one row per physical cell and eac
 | output function/address/pulse | Exact relay/lock-control method, polarity, pulse duration and safe default. |
 | fault/timeout behavior | Which module, line and sensor failures can be detected and reported. |
 
-Reserve logical capacity 29-32 is not a claim that physical doors exist. Configuration validation
-must reject duplicate cell IDs, duplicate/conflicting module addresses and mappings outside the
-approved hardware profile. Whether production can be changed by configuration alone depends on the
-selected modules; this has not yet been demonstrated.
+The BSM-1616RB channel count can cover 14 doors with one module and 28 doors plus four reserved
+logical channels with two modules, assuming one digital input and one output per door. This is only
+channel-count arithmetic; module addresses, cabinet wiring, output load ratings and fault isolation
+must be separately approved and tested. Reserve logical capacity 29-32 is not a claim that
+physical doors exist. Configuration validation must reject duplicate cell IDs,
+duplicate/conflicting module addresses and mappings outside the approved hardware profile.
 
 ## Safety before production use
 
