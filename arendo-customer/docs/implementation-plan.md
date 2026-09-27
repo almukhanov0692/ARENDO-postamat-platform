@@ -47,9 +47,9 @@ gates explicit. A prototype or simulator result is not a production acceptance r
 
 Stage 0 is in progress. The official repository contains a buildable RK3568 Android gateway and a
 four-cell Modbus simulator path. The customer has approved a 10-relay exhibition build and Nursultan
-confirmed the sequential D01-X1/Y1 through D10-X10/Y10 map. The canonical app is still fixed at four
-channels, so the 10-channel profile is not yet integrated or acceptance-tested. A BSM-1616RB manual
-is now available and documents the candidate
+confirmed the sequential D01-X1/Y1 through D10-X10/Y10 map. The Android app is now configured for
+ten channels and the debug build compiles; physical ten-channel verification remains. A BSM-1616RB
+manual is now available and documents the candidate
 16-in/16-out map and Modbus functions; the physical revision/output type, unique module addresses,
 door wiring, power calculations and 14-channel field map still need confirmation. A WebSocket/local-
 server demonstration was exercised separately, but its production-safe implementation is not yet

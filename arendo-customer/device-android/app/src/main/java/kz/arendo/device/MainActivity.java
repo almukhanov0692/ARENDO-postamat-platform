@@ -42,7 +42,7 @@ import kz.arendo.device.modbus.UsbSerialTransport;
 /** Foundation UI for the Android gateway installed in the postamat. */
 public final class MainActivity extends Activity {
     private static final String USB_PERMISSION = "kz.arendo.device.USB_PERMISSION";
-    private static final int CELL_COUNT = 4;
+    private static final int CELL_COUNT = 10;
     private static final int SLAVE_ID = 1;
     private static final int INPUT_START = 0;
     private static final int OUTPUT_START = 0;
@@ -134,7 +134,7 @@ public final class MainActivity extends Activity {
         root.addView(statusCard, matchWrap(0));
 
         root.addView(sectionTitle("ЯЧЕЙКИ · ДИАГНОСТИКА СТЕНДА"), matchWrap(22));
-        root.addView(label("X1–X4 — обратный сигнал, Y1–Y4 — команда на замок/LED.",
+        root.addView(label("X1–X10 — сигнал датчика/кнопки, Y1–Y10 — команда реле.",
                 13, Color.rgb(100, 116, 139)), matchWrap(0));
 
         for (int index = 0; index < CELL_COUNT; index++) {
@@ -220,7 +220,7 @@ public final class MainActivity extends Activity {
                 runOnUiThread(() -> {
                     setUsbStatus("Modbus RTU подключён · 9600 8N1", true);
                     setButtonsEnabled(true);
-                    appendLog("RS-485 открыт, запущен опрос X1–X4");
+                    appendLog("RS-485 открыт, запущен опрос X1–X10");
                 });
                 startPolling();
             } catch (Exception error) {

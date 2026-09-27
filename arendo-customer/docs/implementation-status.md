@@ -51,9 +51,9 @@ specification; they are not replaced with locally invented test numbering.
 - The stand is a simulator. It does not prove a production lock sensor or a real door sensor.
 - The customer has approved 10 relay channels for the interim exhibition build, according to
   Nursultan. Nursultan confirmed D01-X1/Y1 through D10-X10/Y10 as the exhibition map. The canonical
-  Android app is still fixed to four channels; the 10-channel profile and feedback have not yet been
-  integrated or acceptance-tested. This demo does not meet T01's 14-real-door requirement or replace
-  the 28-door product target.
+  Android app is now configured to display and poll ten channels, and its debug build compiles.
+  Physical ten-channel feedback has not yet been verified. This demo does not meet T01's
+  14-real-door requirement or replace the 28-door product target.
 
 ### Backend integration prototype
 

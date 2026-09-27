@@ -1,8 +1,10 @@
 # Android Modbus gateway profile v1
 
-Status: the four-cell laboratory map is implemented. The supplied BSM-1616RB manual provides a
-candidate 16-in/16-out Modbus profile; the physical board revision, output implementation, full
-door map, topology and electrical design still require commissioning before production use. See
+Status: the Android app is now configured for the approved 10-channel exhibition map; the earlier
+four-cell laboratory map is the only physical behavior previously demonstrated. The supplied
+BSM-1616RB manual provides a candidate 16-in/16-out Modbus profile; the physical board revision,
+output implementation, ten-channel hardware behavior, final topology and electrical design still
+require commissioning. See
 [`../hardware/bsm-1616rb.md`](../hardware/bsm-1616rb.md).
 
 ## Physical path
@@ -105,10 +107,10 @@ physical doors exist. Configuration validation must reject duplicate cell IDs,
 duplicate/conflicting module addresses and mappings outside the approved hardware profile.
 
 The customer has approved an interim exhibition build with 10 relay channels, according to
-Nursultan. The logical X/Y map is confirmed as shown above. The current canonical Android
-screen/polling loop is still limited to four channels, so the 10-channel configuration requires a
-software change and separate verification. This exhibition approval does not replace the TЗ's
-14-door first acceptance stand or 28-door target.
+Nursultan. The logical X/Y map is confirmed as shown above. The canonical Android screen and poller
+are configured for ten channels and the debug APK compiles; physical verification of each channel
+is still pending. This exhibition approval does not replace the TЗ's 14-door first acceptance stand
+or 28-door target.
 
 ## Safety before production use
 
