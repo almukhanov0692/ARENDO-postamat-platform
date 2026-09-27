@@ -19,8 +19,9 @@ write (`0x0F`) and production cell configuration are not yet integrated. See
 `../docs/hardware/bsm-1616rb.md` and `../docs/protocols/modbus-gateway-v1.md`.
 
 The customer has approved an interim exhibition setup with 10 relay channels, according to Nursultan.
-The current app still displays and polls four simulator channels. Do not treat the 10-channel
-exhibit as the TЗ's 14-real-door acceptance test or 28-door target.
+The confirmed exhibition mapping is D01-X1/Y1 through D10-X10/Y10. The current app still displays
+and polls four simulator channels. Do not treat the 10-channel exhibit as the TЗ's 14-real-door
+acceptance test or 28-door target.
 
 The backend WebSocket client, persistent offline queue and production configuration store are
 intentionally the next milestone. Their contract is documented in `../docs/protocols/backend-v1.md`.

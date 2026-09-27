@@ -46,17 +46,19 @@ gates explicit. A prototype or simulator result is not a production acceptance r
 ## Current position
 
 Stage 0 is in progress. The official repository contains a buildable RK3568 Android gateway and a
-four-cell Modbus simulator path. The customer has approved a 10-relay exhibition build according to
-Nursultan; the canonical app is still fixed at four channels, so the 10-channel profile is not yet
-integrated or acceptance-tested. A BSM-1616RB manual is now available and documents the candidate
+four-cell Modbus simulator path. The customer has approved a 10-relay exhibition build and Nursultan
+confirmed the sequential D01-X1/Y1 through D10-X10/Y10 map. The canonical app is still fixed at four
+channels, so the 10-channel profile is not yet integrated or acceptance-tested. A BSM-1616RB manual
+is now available and documents the candidate
 16-in/16-out map and Modbus functions; the physical revision/output type, unique module addresses,
 door wiring, power calculations and 14-channel field map still need confirmation. A WebSocket/local-
 server demonstration was exercised separately, but its production-safe implementation is not yet
 merged into the canonical gateway. No 14-door physical acceptance, technician grant flow, durable
 offline event queue, update/rollback, GPS, advertising/audio or final handover has been demonstrated.
 
-The next implementation gate is to confirm the physical BSM-1616RB revision and output type, set
-unique RS-485 addresses where multiple modules are used, and approve the door/sensor/power map;
-then build and commission the scalable hardware gateway. The test matrix in
+The next implementation gate is to implement the confirmed 10-channel configuration in the Android
+gateway and verify each input/output safely on the exhibition hardware. Then confirm the physical
+BSM-1616RB revision/output type, electrical load design and multi-module addressing for the 14/28
+door scope. The test matrix in
 [`testing/acceptance-matrix.md`](testing/acceptance-matrix.md) tracks evidence using the original
 T01-T26 identifiers from the specification.

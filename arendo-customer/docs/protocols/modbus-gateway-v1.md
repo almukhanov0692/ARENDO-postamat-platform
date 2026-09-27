@@ -13,7 +13,7 @@ Android on RK3568 -> USB host -> USB-RS485 converter -> Modbus RTU I/O module
 
 Baseline serial parameters are configurable. The current stand uses slave `1`, `9600` baud, `8N1`.
 
-## Laboratory simulator mapping
+## Current four-cell laboratory simulator mapping
 
 | Cell | Input | Output | Default zero-based address |
 |---|---|---|---:|
@@ -27,6 +27,25 @@ Baseline serial parameters are configurable. The current stand uses slave `1`, `
 - CRC16, slave ID, function, response length and write echo must be validated.
 - Input and output base addresses are configuration values, not backend fields.
 - Input polarity is configuration. The four-button stand is calibrated during installation.
+
+## Approved 10-channel exhibition mapping
+
+Nursultan confirmed a one-to-one map for the exhibition unit: D01-D10 map in order to X1-X10 and
+Y1-Y10. The Modbus point addresses below are zero-based for the BSM-1616RB profile. Physical
+end-to-end verification of all ten channels is still pending.
+
+| Logical cell | Input | Output | Address (input/output) |
+|---|---|---|---:|
+| `01` | X1 | Y1 | 0 |
+| `02` | X2 | Y2 | 1 |
+| `03` | X3 | Y3 | 2 |
+| `04` | X4 | Y4 | 3 |
+| `05` | X5 | Y5 | 4 |
+| `06` | X6 | Y6 | 5 |
+| `07` | X7 | Y7 | 6 |
+| `08` | X8 | Y8 | 7 |
+| `09` | X9 | Y9 | 8 |
+| `10` | X10 | Y10 | 9 |
 
 For the supplied BSM-1616RB manual, the same zero-based input/output channel numbering is specified
 for up to 16 points: X1/Y1 use address 0 through X16/Y16 at address 15. Production use still
@@ -86,10 +105,10 @@ physical doors exist. Configuration validation must reject duplicate cell IDs,
 duplicate/conflicting module addresses and mappings outside the approved hardware profile.
 
 The customer has approved an interim exhibition build with 10 relay channels, according to
-Nursultan. It can use the first ten logical channels of the BSM profile once the physical wiring map
-is confirmed. The current canonical Android screen/polling loop is still limited to four channels,
-so the 10-channel configuration requires a software change and separate verification. This
-exhibition approval does not replace the TЗ's 14-door first acceptance stand or 28-door target.
+Nursultan. The logical X/Y map is confirmed as shown above. The current canonical Android
+screen/polling loop is still limited to four channels, so the 10-channel configuration requires a
+software change and separate verification. This exhibition approval does not replace the TЗ's
+14-door first acceptance stand or 28-door target.
 
 ## Safety before production use
 
