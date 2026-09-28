@@ -1,0 +1,17 @@
+# Local Android/Gradle state
+.gradle/
+**/build/
+local.properties
+
+# Temporary Codex attachments and QA/render output
+.codex-remote-attachments/
+tmp/
+current-screen.png
+
+# Python cache and local server logs
+__pycache__/
+*.py[cod]
+*.log
+
+# Local inspection exports
+*.inspect.ndjson
