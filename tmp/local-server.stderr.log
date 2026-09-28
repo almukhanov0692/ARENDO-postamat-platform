@@ -1,0 +1,54 @@
+2026-09-19 23:33:23,042 INFO WebSocket: ws://0.0.0.0:8765/v1/device/socket
+2026-09-19 23:33:23,042 INFO Admin:      http://0.0.0.0:8766/
+2026-09-19 23:33:23,043 INFO Ожидается Android; токен: принимается любой для локального теста
+2026-09-19 23:33:34,126 INFO HTTP "GET /health HTTP/1.1" 200 -
+2026-09-19 23:33:34,187 INFO Команда не отправлена: Android не подключён
+2026-09-19 23:33:34,188 INFO HTTP "GET /api/command/open?cell=01 HTTP/1.1" 503 -
+2026-09-19 23:33:44,405 INFO WebSocket подключён, token hint=...-token
+2026-09-19 23:33:44,416 INFO \u2190 Android: некорректный JSON
+2026-09-19 23:33:54,261 INFO WebSocket отключён
+2026-09-19 23:33:59,589 INFO HTTP "GET /api/state HTTP/1.1" 200 -
+2026-09-19 23:34:06,169 INFO WebSocket подключён, token hint=...-token
+2026-09-19 23:34:06,178 INFO \u2190 Android: hello
+2026-09-19 23:34:06,178 INFO \u2192 Android: welcome
+2026-09-19 23:34:06,236 INFO WebSocket отключён
+2026-09-19 23:34:13,477 INFO WebSocket подключён, token hint=...-token
+2026-09-19 23:34:13,484 INFO \u2190 Android: hello
+2026-09-19 23:34:13,485 INFO \u2192 Android: welcome
+2026-09-19 23:34:13,547 INFO \u2192 Android: command open_cell
+2026-09-19 23:34:13,548 INFO HTTP "GET /api/command/open?cell=01 HTTP/1.1" 200 -
+2026-09-19 23:34:13,620 INFO WebSocket отключён
+2026-09-19 23:34:21,947 INFO WebSocket подключён, token hint=...-token
+2026-09-19 23:34:21,953 INFO \u2190 Android: hello
+2026-09-19 23:34:21,954 INFO \u2192 Android: welcome
+2026-09-19 23:34:22,007 INFO \u2190 Android: event door_opened 01
+2026-09-19 23:34:22,326 INFO HTTP "GET /api/state HTTP/1.1" 200 -
+2026-09-19 23:34:22,380 INFO WebSocket отключён
+2026-09-19 23:34:25,683 INFO HTTP "GET /health HTTP/1.1" 200 -
+2026-09-19 23:35:44,648 INFO WebSocket подключён, token hint=...al-dev
+2026-09-19 23:35:44,653 INFO \u2190 Android: hello
+2026-09-19 23:35:44,654 INFO \u2192 Android: welcome
+2026-09-19 23:35:45,338 INFO WebSocket отключён
+2026-09-19 23:35:45,344 INFO WebSocket подключён, token hint=...al-dev
+2026-09-19 23:35:45,350 INFO \u2190 Android: hello
+2026-09-19 23:35:45,350 INFO \u2192 Android: welcome
+2026-09-19 23:35:46,761 INFO WebSocket отключён
+2026-09-19 23:35:46,767 INFO WebSocket подключён, token hint=...al-dev
+2026-09-19 23:35:46,770 INFO \u2190 Android: hello
+2026-09-19 23:35:46,770 INFO \u2192 Android: welcome
+2026-09-19 23:35:54,854 INFO HTTP "GET /api/state HTTP/1.1" 200 -
+2026-09-19 23:35:58,805 INFO \u2192 Android: command open_cell
+2026-09-19 23:35:58,806 INFO HTTP "GET /api/command/open?cell=01 HTTP/1.1" 200 -
+2026-09-19 23:35:58,814 INFO \u2190 Android: ack local-e6164214317e ok=False
+2026-09-19 23:35:59,660 INFO \u2190 Android: heartbeat
+2026-09-19 23:36:00,223 INFO \u2190 Android: heartbeat
+2026-09-19 23:36:00,866 INFO HTTP "GET /api/state HTTP/1.1" 200 -
+2026-09-19 23:36:14,664 INFO \u2190 Android: heartbeat
+2026-09-19 23:36:29,666 INFO \u2190 Android: heartbeat
+2026-09-19 23:36:44,672 INFO \u2190 Android: heartbeat
+2026-09-19 23:36:59,680 INFO \u2190 Android: heartbeat
+2026-09-19 23:37:14,684 INFO \u2190 Android: heartbeat
+2026-09-19 23:37:26,039 INFO HTTP "GET /health HTTP/1.1" 200 -
+2026-09-19 23:37:29,689 INFO \u2190 Android: heartbeat
+2026-09-19 23:37:44,693 INFO \u2190 Android: heartbeat
+2026-09-19 23:37:59,694 INFO \u2190 Android: heartbeat

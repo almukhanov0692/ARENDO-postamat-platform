@@ -1,0 +1,88 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.example.postamatmodbus"
+4    android:versionCode="3"
+5    android:versionName="0.2.1" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="21"
+9        android:targetSdkVersion="35" />
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:2:5-67
+11-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:2:22-64
+12    <uses-permission
+12-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:3:5-95
+13        android:name="android.permission.BLUETOOTH"
+13-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:3:22-65
+14        android:maxSdkVersion="30" />
+14-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:3:66-92
+15    <uses-permission
+15-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:4:5-101
+16        android:name="android.permission.BLUETOOTH_ADMIN"
+16-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:4:22-71
+17        android:maxSdkVersion="30" />
+17-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:4:72-98
+18    <uses-permission
+18-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:5:5-6:58
+19        android:name="android.permission.BLUETOOTH_SCAN"
+19-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:5:22-70
+20        android:usesPermissionFlags="neverForLocation" />
+20-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:6:9-55
+21    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+21-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:7:5-76
+21-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:7:22-73
+22    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+22-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:8:5-78
+22-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:8:22-75
+23
+24    <uses-feature android:name="android.hardware.usb.host" />
+24-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:9:5-62
+24-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:9:19-59
+25    <uses-feature
+25-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:10:5-91
+26        android:name="android.hardware.bluetooth_le"
+26-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:10:19-63
+27        android:required="false" />
+27-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:10:64-88
+28
+29    <application
+29-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:12:5-29:19
+30        android:allowBackup="false"
+30-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:13:9-36
+31        android:debuggable="true"
+32        android:extractNativeLibs="true"
+33        android:label="ARENDO Postamat"
+33-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:14:9-40
+34        android:supportsRtl="true"
+34-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:16:9-35
+35        android:theme="@style/AppTheme"
+35-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:17:9-40
+36        android:usesCleartextTraffic="true" >
+36-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:15:9-44
+37        <activity
+37-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:18:9-25:20
+38            android:name="com.example.postamatmodbus.MainActivity"
+38-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:19:13-41
+39            android:exported="true" >
+39-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:20:13-36
+40            <intent-filter>
+40-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:21:13-24:29
+41                <action android:name="android.intent.action.MAIN" />
+41-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:22:17-69
+41-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:22:25-66
+42
+43                <category android:name="android.intent.category.LAUNCHER" />
+43-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:23:17-77
+43-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:23:27-74
+44            </intent-filter>
+45        </activity>
+46        <activity
+46-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:26:9-28:40
+47            android:name="com.example.postamatmodbus.LogActivity"
+47-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:27:13-40
+48            android:exported="false" />
+48-->C:\Users\user\Documents\New project 4\app\src\main\AndroidManifest.xml:28:13-37
+49    </application>
+50
+51</manifest>
