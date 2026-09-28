@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.hardware.usb.UsbDevice;
@@ -13,9 +14,11 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -26,31 +29,43 @@ import com.hoho.android.usbserial.driver.UsbSerialDriver;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import kz.arendo.device.modbus.ModbusRtuClient;
+import kz.arendo.device.modbus.ModbusCellMap;
+import kz.arendo.device.modbus.ModbusIoGateway;
 import kz.arendo.device.modbus.UsbSerialTransport;
+import kz.arendo.device.backend.CommandIdLedger;
+import kz.arendo.device.backend.DeviceBackendClient;
 
 /** Foundation UI for the Android gateway installed in the postamat. */
 public final class MainActivity extends Activity {
     private static final String USB_PERMISSION = "kz.arendo.device.USB_PERMISSION";
-    private static final int CELL_COUNT = 10;
-    private static final int SLAVE_ID = 1;
-    private static final int INPUT_START = 0;
-    private static final int OUTPUT_START = 0;
+    private static final ModbusCellMap CELL_MAP = ModbusCellMap.exhibition10();
+    private static final int CELL_COUNT = CELL_MAP.getCells().size();
     private static final int BAUD_RATE = 9600;
 
     private final ScheduledExecutorService io = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService backendTimer = Executors.newSingleThreadScheduledExecutor();
     private final boolean[] previousInputs = new boolean[CELL_COUNT];
     private final boolean[] outputActive = new boolean[CELL_COUNT];
+    private final String[] doorStates = new String[CELL_COUNT];
     private final TextView[] cellStates = new TextView[CELL_COUNT];
     private final Button[] cellButtons = new Button[CELL_COUNT];
 
@@ -58,11 +73,27 @@ public final class MainActivity extends Activity {
     private UsbSerialDriver pendingDriver;
     private UsbSerialPort serialPort;
     private ModbusRtuClient modbus;
+    private ModbusIoGateway ioGateway;
     private ScheduledFuture<?> polling;
+    private ScheduledFuture<?> heartbeat;
     private boolean inputsInitialized;
+    private volatile boolean modbusOnline;
     private TextView usbStatus;
     private TextView backendStatus;
     private TextView logView;
+    private EditText backendUrlInput;
+    private EditText postamatIdInput;
+    private EditText deviceTokenInput;
+    private DeviceBackendClient backendClient;
+    private CommandIdLedger commandLedger;
+    private String activePostamatId = "map-7";
+    private String activeDeviceToken = "";
+    private String activeBackendUrl = "";
+    private int heartbeatSeconds = 15;
+    private volatile boolean backendRequested;
+    private volatile boolean backendConnected;
+    private int backendGeneration;
+    private int reconnectAttempt;
 
     private final BroadcastReceiver usbPermissionReceiver = new BroadcastReceiver() {
         @Override
@@ -87,8 +118,19 @@ public final class MainActivity extends Activity {
         getWindow().setStatusBarColor(Color.rgb(15, 23, 42));
         getWindow().setNavigationBarColor(Color.rgb(244, 247, 251));
         usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+        for (int index = 0; index < CELL_COUNT; index++) {
+            doorStates[index] = "unknown";
+        }
+        try {
+            commandLedger = new CommandIdLedger(getFilesDir());
+        } catch (IOException error) {
+            commandLedger = null;
+        }
         registerUsbReceiver();
         setContentView(buildUi());
+        if (commandLedger == null) {
+            appendLog("Backend: не удалось подготовить журнал защиты от повторных команд");
+        }
     }
 
     private void registerUsbReceiver() {
@@ -124,7 +166,7 @@ public final class MainActivity extends Activity {
         statusCard.setPadding(dp(18), dp(16), dp(18), dp(16));
         statusCard.setBackgroundColor(Color.WHITE);
         usbStatus = label("Modbus: не подключён", 16, Color.rgb(185, 28, 28));
-        backendStatus = label("Backend: будет подключён на следующем этапе", 14,
+        backendStatus = label("Backend WebSocket: не подключён", 14,
                 Color.rgb(100, 116, 139));
         statusCard.addView(usbStatus);
         statusCard.addView(backendStatus);
@@ -133,26 +175,53 @@ public final class MainActivity extends Activity {
         statusCard.addView(connect, matchWrap(8));
         root.addView(statusCard, matchWrap(0));
 
+        root.addView(sectionTitle("BACKEND WEBSOCKET"), matchWrap(22));
+        SharedPreferences backendPreferences = getSharedPreferences(
+                "backend_config", MODE_PRIVATE);
+        LinearLayout backendCard = column(8);
+        backendCard.setPadding(dp(18), dp(16), dp(18), dp(16));
+        backendCard.setBackgroundColor(Color.WHITE);
+        backendCard.addView(label("Локально: ws://IP-ноутбука:8765/v1/device/socket · сервер: wss://",
+                12, Color.rgb(100, 116, 139)));
+        backendUrlInput = editField("ws://192.168.0.1:8765/v1/device/socket",
+                backendPreferences.getString("url", ""), InputType.TYPE_CLASS_TEXT
+                        | InputType.TYPE_TEXT_VARIATION_URI);
+        backendCard.addView(backendUrlInput, matchWrap(4));
+        postamatIdInput = editField("ID постамата", backendPreferences.getString("postamatId",
+                "map-7"), InputType.TYPE_CLASS_TEXT);
+        backendCard.addView(postamatIdInput, matchWrap(4));
+        deviceTokenInput = editField("Токен устройства (для локального сервера можно пусто)", "",
+                InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        backendCard.addView(deviceTokenInput, matchWrap(4));
+        Button backendConnect = button("Подключить Backend WebSocket", true);
+        backendConnect.setOnClickListener(view -> connectBackendFromForm());
+        backendCard.addView(backendConnect, matchWrap(6));
+        root.addView(backendCard, matchWrap(0));
+
         root.addView(sectionTitle("ЯЧЕЙКИ · ДИАГНОСТИКА СТЕНДА"), matchWrap(22));
-        root.addView(label("X1–X10 — сигнал датчика/кнопки, Y1–Y10 — команда реле.",
+        root.addView(label("Демо-плата: 10 выходов; обратная связь заведена только для D01-D04.",
                 13, Color.rgb(100, 116, 139)), matchWrap(0));
 
         for (int index = 0; index < CELL_COUNT; index++) {
             final int cell = index;
+            ModbusCellMap.Cell mapping = CELL_MAP.getCell(index);
             LinearLayout card = column(8);
             card.setPadding(dp(18), dp(14), dp(18), dp(14));
             card.setBackgroundColor(Color.WHITE);
-            TextView cellTitle = label(String.format(Locale.ROOT, "Ячейка %02d", index + 1),
+            TextView cellTitle = label("Ячейка " + mapping.getCode(),
                     17, Color.rgb(15, 23, 42));
             cellTitle.setTypeface(Typeface.DEFAULT_BOLD);
             card.addView(cellTitle);
             cellStates[index] = label("Состояние: неизвестно", 14, Color.rgb(100, 116, 139));
             card.addView(cellStates[index]);
-            cellButtons[index] = button("Тест: включить Y" + (index + 1), false);
+            String action = mapping.hasDoorInput()
+                    ? "Тест: включить Y" : "Тест реле Y";
+            cellButtons[index] = button(action + mapping.getOutputChannel(), false);
             cellButtons[index].setEnabled(false);
             cellButtons[index].setOnClickListener(view -> toggleOutput(cell));
             card.addView(cellButtons[index], matchWrap(4));
             root.addView(card, matchWrap(10));
+            updateCell(index, "unknown");
         }
 
         root.addView(sectionTitle("ЖУРНАЛ СТЕНДА"), matchWrap(22));
@@ -163,6 +232,429 @@ public final class MainActivity extends Activity {
         root.addView(logView, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, dp(180)));
         return scroll;
+    }
+
+    private EditText editField(String hint, String value, int inputType) {
+        EditText field = new EditText(this);
+        field.setSingleLine(true);
+        field.setTextSize(14);
+        field.setInputType(inputType);
+        field.setHint(hint);
+        if (value != null && !value.isEmpty()) {
+            field.setText(value);
+            field.setSelection(value.length());
+        }
+        field.setPadding(dp(14), dp(10), dp(14), dp(10));
+        field.setBackgroundColor(Color.rgb(244, 247, 251));
+        return field;
+    }
+
+    private void connectBackendFromForm() {
+        String endpoint = backendUrlInput.getText().toString().trim();
+        String postamatId = postamatIdInput.getText().toString().trim();
+        String token = deviceTokenInput.getText().toString().trim();
+        if (endpoint.isEmpty() || postamatId.isEmpty()) {
+            setBackendStatus("Укажи WebSocket URL и ID постамата", false);
+            return;
+        }
+        try {
+            URI uri = new URI(endpoint);
+            String scheme = uri.getScheme();
+            if (uri.getHost() == null || !("ws".equalsIgnoreCase(scheme)
+                    || "wss".equalsIgnoreCase(scheme))) {
+                throw new URISyntaxException(endpoint, "Нужен ws:// или wss:// адрес");
+            }
+            if ("ws".equalsIgnoreCase(scheme)
+                    && (!BuildConfig.DEBUG || !isPrivateNetworkHost(uri.getHost()))) {
+                setBackendStatus("Незащищённый ws:// разрешён только для локальной сети в debug-сборке",
+                        false);
+                return;
+            }
+            if ("wss".equalsIgnoreCase(scheme) && token.isEmpty()) {
+                setBackendStatus("Для wss:// введи токен устройства", false);
+                return;
+            }
+            backendRequested = false;
+            DeviceBackendClient oldClient = backendClient;
+            backendClient = null;
+            backendGeneration++;
+            if (oldClient != null) {
+                oldClient.close();
+            }
+            activeBackendUrl = endpoint;
+            activePostamatId = postamatId;
+            activeDeviceToken = token;
+            reconnectAttempt = 0;
+            getSharedPreferences("backend_config", MODE_PRIVATE).edit()
+                    .putString("url", endpoint)
+                    .putString("postamatId", postamatId)
+                    .apply();
+            backendRequested = true;
+            openBackendConnection(backendGeneration);
+        } catch (URISyntaxException error) {
+            setBackendStatus("Проверь WebSocket URL", false);
+        }
+    }
+
+    private boolean isPrivateNetworkHost(String host) {
+        String value = host.toLowerCase(Locale.ROOT);
+        if ("localhost".equals(value) || "::1".equals(value) || value.startsWith("127.")) {
+            return true;
+        }
+        if (value.startsWith("10.") || value.startsWith("192.168.")
+                || value.startsWith("169.254.")) {
+            return true;
+        }
+        if (value.startsWith("172.")) {
+            String[] parts = value.split("\\.");
+            if (parts.length > 1) {
+                try {
+                    int second = Integer.parseInt(parts[1]);
+                    return second >= 16 && second <= 31;
+                } catch (NumberFormatException ignored) {
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void openBackendConnection(int generation) {
+        if (!backendRequested || generation != backendGeneration) {
+            return;
+        }
+        setBackendStatus("Подключение…", false);
+        try {
+            URI uri = new URI(activeBackendUrl);
+            final DeviceBackendClient[] holder = new DeviceBackendClient[1];
+            DeviceBackendClient client = new DeviceBackendClient(uri, activeDeviceToken,
+                    new DeviceBackendClient.Listener() {
+                        @Override
+                        public void onOpen() {
+                            if (generation != backendGeneration) {
+                                holder[0].close();
+                                return;
+                            }
+                            backendConnected = true;
+                            reconnectAttempt = 0;
+                            setBackendStatus("Подключён · " + activePostamatId, true);
+                            runOnUiThread(() -> appendLog("Backend WebSocket: соединение установлено"));
+                            sendHello();
+                        }
+
+                        @Override
+                        public void onMessage(JSONObject message) {
+                            if (generation == backendGeneration) {
+                                handleBackendMessage(message);
+                            }
+                        }
+
+                        @Override
+                        public void onClose(String reason) {
+                            if (generation == backendGeneration) {
+                                backendConnected = false;
+                                cancelHeartbeat();
+                                setBackendStatus("Связь потеряна · переподключение…", false);
+                                scheduleBackendReconnect(generation);
+                            }
+                        }
+
+                        @Override
+                        public void onError(Exception error) {
+                            if (generation == backendGeneration) {
+                                setBackendStatus("Ошибка WebSocket · проверь URL/сеть/сертификат",
+                                        false);
+                            }
+                        }
+                    });
+            holder[0] = client;
+            backendClient = client;
+            client.connect();
+        } catch (URISyntaxException error) {
+            backendRequested = false;
+            setBackendStatus("Некорректный WebSocket URL", false);
+        }
+    }
+
+    private void scheduleBackendReconnect(int generation) {
+        if (!backendRequested || generation != backendGeneration) {
+            return;
+        }
+        reconnectAttempt = Math.min(reconnectAttempt + 1, 5);
+        long delaySeconds = Math.min(30, 1L << reconnectAttempt);
+        backendTimer.schedule(() -> openBackendConnection(generation),
+                delaySeconds, TimeUnit.SECONDS);
+    }
+
+    private void sendHello() {
+        try {
+            JSONObject hello = new JSONObject();
+            JSONArray capabilities = new JSONArray();
+            capabilities.put("locks");
+            capabilities.put("buttons");
+            capabilities.put("indicators");
+            capabilities.put("demo_buttons_as_doors");
+            hello.put("type", "hello");
+            hello.put("protocolVersion", 1);
+            hello.put("postamatId", activePostamatId);
+            hello.put("appVersion", BuildConfig.VERSION_NAME);
+            hello.put("capabilities", capabilities);
+            hello.put("cells", currentCellsSnapshot());
+            hello.put("net", new JSONObject().put("kind", "unknown"));
+            sendBackendMessage(hello);
+        } catch (JSONException error) {
+            appendLogOnUi("Backend: не удалось сформировать hello");
+        }
+    }
+
+    private JSONArray currentCellsSnapshot() throws JSONException {
+        JSONArray cells = new JSONArray();
+        for (int index = 0; index < CELL_COUNT; index++) {
+            JSONObject cell = new JSONObject();
+            cell.put("code", CELL_MAP.getCell(index).getCode());
+            cell.put("door", doorStates[index] == null ? "unknown" : doorStates[index]);
+            cell.put("lock", "unknown");
+            cells.put(cell);
+        }
+        return cells;
+    }
+
+    private void sendHeartbeat() {
+        if (!backendConnected) {
+            return;
+        }
+        try {
+            JSONObject message = new JSONObject();
+            message.put("type", "heartbeat");
+            message.put("postamatId", activePostamatId);
+            message.put("sentAt", utcNow());
+            message.put("cells", currentCellsSnapshot());
+            message.put("net", new JSONObject().put("kind", "unknown"));
+            JSONArray problems = new JSONArray();
+            if (!modbusOnline) {
+                problems.put("modbus_offline");
+            }
+            message.put("problems", problems);
+            sendBackendMessage(message);
+        } catch (JSONException error) {
+            appendLogOnUi("Backend: не удалось сформировать heartbeat");
+        }
+    }
+
+    private void handleBackendMessage(JSONObject message) {
+        String type = message.optString("type", "");
+        if ("welcome".equals(type)) {
+            String serverPostamatId = message.optString("postamatId", activePostamatId);
+            if (!activePostamatId.equals(serverPostamatId)) {
+                setBackendStatus("Сервер вернул другой ID постамата", false);
+                DeviceBackendClient client = backendClient;
+                if (client != null) {
+                    client.close();
+                }
+                return;
+            }
+            JSONObject config = message.optJSONObject("config");
+            if (config != null) {
+                heartbeatSeconds = Math.max(5,
+                        Math.min(300, config.optInt("heartbeatSec", 15)));
+            }
+            cancelHeartbeat();
+            sendHeartbeat();
+            heartbeat = backendTimer.scheduleWithFixedDelay(this::sendHeartbeat,
+                    heartbeatSeconds, heartbeatSeconds, TimeUnit.SECONDS);
+            appendLogOnUi("Backend: welcome получен · heartbeat " + heartbeatSeconds + " сек");
+            return;
+        }
+        if ("command".equals(type)) {
+            io.execute(() -> processBackendCommand(message));
+            return;
+        }
+        appendLogOnUi("Backend: получено сообщение " + type);
+    }
+
+    private void processBackendCommand(JSONObject command) {
+        String commandId = command.optString("id", "").trim();
+        String kind = command.optString("kind", "");
+        String targetPostamat = command.optString("postamatId", "");
+        JSONObject payload = command.optJSONObject("payload");
+        String code = payload == null ? "" : normalizeCellCode(payload.optString("cellCode", ""));
+
+        if (commandId.isEmpty()) {
+            sendCommandAck("", false, "invalid_command_id", code);
+            return;
+        }
+        if (!activePostamatId.equals(targetPostamat)) {
+            sendCommandAck(commandId, false, "wrong_postamat", code);
+            return;
+        }
+        if (isExpired(command.optString("expiresAt", ""))) {
+            sendCommandAck(commandId, false, "expired", code);
+            return;
+        }
+        if ("cell_report".equals(kind)) {
+            sendHeartbeat();
+            sendCommandAck(commandId, true, "cell_report_sent", "");
+            return;
+        }
+        if (!"open_cell".equals(kind)) {
+            sendCommandAck(commandId, false, "unsupported_command", code);
+            return;
+        }
+        int index = findCellIndex(code);
+        if (index < 0) {
+            sendCommandAck(commandId, false, "invalid_cell", code);
+            return;
+        }
+        if (commandLedger == null) {
+            sendCommandAck(commandId, false, "internal_error", code);
+            return;
+        }
+        try {
+            if (!commandLedger.markIfNew(commandId)) {
+                sendCommandAck(commandId, true, "duplicate_ignored", code);
+                return;
+            }
+        } catch (IOException | IllegalArgumentException error) {
+            sendCommandAck(commandId, false, "internal_error", code);
+            return;
+        }
+
+        ModbusIoGateway gateway = ioGateway;
+        if (gateway == null) {
+            sendCommandAck(commandId, false, "modbus_offline", code);
+            return;
+        }
+        try {
+            if (!outputActive[index]) {
+                gateway.writeCellOutput(index, true);
+                outputActive[index] = true;
+            }
+            ModbusCellMap.Cell cell = CELL_MAP.getCell(index);
+            if (cell.hasDoorInput()) {
+                doorStates[index] = "open";
+                final int cellIndex = index;
+                runOnUiThread(() -> updateCell(cellIndex, "open"));
+                sendDoorEvent(index, "door_opened", "demo_relay");
+            }
+            sendCommandAck(commandId, true, "open_command_accepted", code);
+            appendLogOnUi("Команда open_cell D" + code + " выполнена через Modbus");
+        } catch (Exception error) {
+            sendCommandAck(commandId, false, "internal_error", code);
+            appendLogOnUi("Ошибка команды D" + code + ": Modbus не выполнил запись");
+        }
+    }
+
+    private int findCellIndex(String code) {
+        if (code == null || code.isEmpty()) {
+            return -1;
+        }
+        for (int index = 0; index < CELL_COUNT; index++) {
+            if (CELL_MAP.getCell(index).getCode().equals(code)) {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    private String normalizeCellCode(String value) {
+        String digits = value == null ? "" : value.replaceAll("[^0-9]", "");
+        if (digits.isEmpty()) {
+            return "";
+        }
+        try {
+            int number = Integer.parseInt(digits);
+            return number >= 1 && number <= CELL_COUNT
+                    ? String.format(Locale.ROOT, "%02d", number) : "";
+        } catch (NumberFormatException error) {
+            return "";
+        }
+    }
+
+    private boolean isExpired(String value) {
+        if (value == null || value.isEmpty()) {
+            return true;
+        }
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+        format.setTimeZone(TimeZone.getTimeZone("UTC"));
+        format.setLenient(false);
+        try {
+            Date expiresAt = format.parse(value);
+            return expiresAt == null || expiresAt.getTime() <= System.currentTimeMillis();
+        } catch (java.text.ParseException error) {
+            return true;
+        }
+    }
+
+    private void sendCommandAck(String commandId, boolean ok, String resultKind, String cellCode) {
+        try {
+            JSONObject ack = new JSONObject();
+            ack.put("type", "ack");
+            ack.put("commandId", commandId);
+            ack.put("ok", ok);
+            if (ok) {
+                JSONObject result = new JSONObject().put("kind", resultKind);
+                if (cellCode != null && !cellCode.isEmpty()) {
+                    result.put("cellCode", cellCode);
+                }
+                ack.put("result", result);
+            } else {
+                ack.put("error", new JSONObject().put("code", resultKind));
+            }
+            sendBackendMessage(ack);
+        } catch (JSONException error) {
+            appendLogOnUi("Backend: не удалось сформировать ack");
+        }
+    }
+
+    private void sendDoorEvent(int index, String kind, String source) {
+        try {
+            JSONObject event = new JSONObject();
+            event.put("type", "event");
+            event.put("eventId", UUID.randomUUID().toString());
+            event.put("kind", kind);
+            event.put("postamatId", activePostamatId);
+            event.put("cellCode", CELL_MAP.getCell(index).getCode());
+            event.put("occurredAt", utcNow());
+            event.put("detail", new JSONObject().put("source", source).put("simulated", true));
+            sendBackendMessage(event);
+        } catch (JSONException error) {
+            appendLogOnUi("Backend: не удалось сформировать событие двери");
+        }
+    }
+
+    private void sendBackendMessage(JSONObject message) {
+        DeviceBackendClient client = backendClient;
+        if (client == null || !client.isOpen()) {
+            return;
+        }
+        client.send(message.toString());
+    }
+
+    private String utcNow() {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+        format.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return format.format(new Date());
+    }
+
+    private void cancelHeartbeat() {
+        if (heartbeat != null) {
+            heartbeat.cancel(false);
+            heartbeat = null;
+        }
+    }
+
+    private void setBackendStatus(String value, boolean online) {
+        runOnUiThread(() -> {
+            if (backendStatus != null) {
+                backendStatus.setText("Backend WebSocket: " + value);
+                backendStatus.setTextColor(online
+                        ? Color.rgb(22, 163, 74) : Color.rgb(100, 116, 139));
+            }
+        });
+    }
+
+    private void appendLogOnUi(String message) {
+        runOnUiThread(() -> appendLog(message));
     }
 
     private void findAndConnect() {
@@ -216,11 +708,13 @@ public final class MainActivity extends Activity {
                 openedPort.setRTS(true);
                 serialPort = openedPort;
                 modbus = new ModbusRtuClient(new UsbSerialTransport(openedPort));
+                ioGateway = new ModbusIoGateway(modbus, CELL_MAP);
+                modbusOnline = true;
                 inputsInitialized = false;
                 runOnUiThread(() -> {
                     setUsbStatus("Modbus RTU подключён · 9600 8N1", true);
                     setButtonsEnabled(true);
-                    appendLog("RS-485 открыт, запущен опрос X1–X10");
+                    appendLog("RS-485 открыт, запущен опрос " + CELL_COUNT + " ячеек");
                 });
                 startPolling();
             } catch (Exception error) {
@@ -238,27 +732,34 @@ public final class MainActivity extends Activity {
             return;
         }
         polling = io.scheduleWithFixedDelay(() -> {
-            ModbusRtuClient client = modbus;
-            if (client == null) {
+            ModbusIoGateway gateway = ioGateway;
+            if (gateway == null) {
                 return;
             }
             try {
-                boolean[] inputs = client.readDiscreteInputs(SLAVE_ID, INPUT_START, CELL_COUNT);
+                boolean[] inputs = gateway.readCellInputs();
+                modbusOnline = true;
                 for (int index = 0; index < CELL_COUNT; index++) {
+                    if (!CELL_MAP.getCell(index).hasDoorInput()) {
+                        continue;
+                    }
                     boolean activated = inputs[index];
                     if (inputsInitialized && activated && !previousInputs[index]) {
-                        client.writeSingleCoil(SLAVE_ID, OUTPUT_START + index, false);
+                        gateway.writeCellOutput(index, false);
                         outputActive[index] = false;
+                        doorStates[index] = "closed";
                         final int cell = index;
                         runOnUiThread(() -> {
                             updateCell(cell, "closed");
-                            appendLog("D" + (cell + 1) + " closed");
+                            appendLog("D" + CELL_MAP.getCell(cell).getCode() + " closed");
                         });
+                        sendDoorEvent(index, "door_closed", "demo_button");
                     }
                     previousInputs[index] = activated;
                 }
                 inputsInitialized = true;
             } catch (Exception error) {
+                modbusOnline = false;
                 runOnUiThread(() -> {
                     setUsbStatus("Ошибка Modbus: " + safeMessage(error), false);
                     appendLog("Modbus: " + safeMessage(error));
@@ -271,29 +772,47 @@ public final class MainActivity extends Activity {
         boolean next = !outputActive[index];
         io.execute(() -> {
             try {
-                ModbusRtuClient client = modbus;
-                if (client == null) {
+                ModbusIoGateway gateway = ioGateway;
+                if (gateway == null) {
                     throw new IOException("Modbus не подключён");
                 }
-                client.writeSingleCoil(SLAVE_ID, OUTPUT_START + index, next);
+                gateway.writeCellOutput(index, next);
                 outputActive[index] = next;
+                ModbusCellMap.Cell mapping = CELL_MAP.getCell(index);
+                String state = mapping.hasDoorInput()
+                        ? (next ? "open" : "closed") : "unknown";
+                doorStates[index] = state;
                 runOnUiThread(() -> {
-                    updateCell(index, next ? "open" : "closed");
-                    appendLog("D" + (index + 1) + (next ? " open" : " closed"));
+                    updateCell(index, state);
+                    appendLog("D" + CELL_MAP.getCell(index).getCode()
+                            + (mapping.hasDoorInput()
+                                    ? (next ? " open (demo)" : " closed (demo)")
+                                    : " output Y" + mapping.getOutputChannel()
+                                            + (next ? " ON; door unknown" : " OFF; door unknown")));
                 });
+                if (mapping.hasDoorInput()) {
+                    sendDoorEvent(index, next ? "door_opened" : "door_closed",
+                            "demo_local_toggle");
+                }
             } catch (Exception error) {
-                runOnUiThread(() -> appendLog("Y" + (index + 1) + ": "
+                int channel = CELL_MAP.getCell(index).getOutputChannel();
+                runOnUiThread(() -> appendLog("Y" + channel + ": "
                         + safeMessage(error)));
             }
         });
     }
 
     private void updateCell(int index, String state) {
+        ModbusCellMap.Cell mapping = CELL_MAP.getCell(index);
         boolean open = "open".equals(state);
-        cellStates[index].setText("Дверь: " + state + " · X" + (index + 1)
-                + " / Y" + (index + 1));
+        String detail = mapping.hasDoorInput()
+                ? "X" + mapping.getInputChannel() + " · Y" + mapping.getOutputChannel()
+                : "вход не подключён · Y" + mapping.getOutputChannel();
+        String relay = outputActive[index] ? "ON" : "OFF";
+        cellStates[index].setText("Дверь: " + state + " · " + detail + " · реле " + relay);
         cellStates[index].setTextColor(open ? Color.rgb(22, 163, 74) : Color.rgb(71, 85, 105));
-        cellButtons[index].setText((open ? "Выключить Y" : "Тест: включить Y") + (index + 1));
+        cellButtons[index].setText((outputActive[index] ? "Выключить Y" : "Тест: включить Y")
+                + mapping.getOutputChannel());
     }
 
     private void setUsbStatus(String value, boolean online) {
@@ -336,6 +855,8 @@ public final class MainActivity extends Activity {
             polling = null;
         }
         modbus = null;
+        modbusOnline = false;
+        ioGateway = null;
         UsbSerialPort port = serialPort;
         serialPort = null;
         if (port != null) {
@@ -350,9 +871,20 @@ public final class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        backendRequested = false;
+        backendConnected = false;
+        backendGeneration++;
+        cancelHeartbeat();
+        DeviceBackendClient client = backendClient;
+        backendClient = null;
+        if (client != null) {
+            client.close();
+        }
+        activeDeviceToken = "";
         closePort();
         unregisterReceiver(usbPermissionReceiver);
         io.shutdownNow();
+        backendTimer.shutdownNow();
         super.onDestroy();
     }
 

@@ -24,7 +24,7 @@ Sent once after each connection.
   "protocolVersion": 1,
   "postamatId": "map-7",
   "appVersion": "0.1.0",
-  "capabilities": ["locks", "door_sensor", "offline_events"],
+  "capabilities": ["locks", "buttons", "indicators", "demo_buttons_as_doors"],
   "cells": [
     {"code": "01", "door": "closed", "lock": "unknown"}
   ],
@@ -130,4 +130,21 @@ Stable error codes: `expired`, `wrong_postamat`, `invalid_cell`, `blocked`, `mod
 4. Persist latest device and cell status plus immutable events.
 5. Mark a postamat offline after the negotiated heartbeat timeout.
 6. Never resend an expired opening command after the device reconnects.
+
+## Door status displayed by the backend
+
+The backend displays the reported state for each logical `cellCode`, for example `D1 open` or
+`D2 closed`. The `door` field has only these meanings:
+
+| Protocol value | UI meaning |
+|---|---|
+| `open` | Door-open feedback was reported for this cell. |
+| `closed` | Door-closed feedback was reported for this cell. |
+| `unknown` | No reliable door feedback is available. |
+
+An `open_cell` acknowledgement means that the device accepted the command; it is not proof that the
+door physically opened. The backend must wait for a `door_opened` event or a subsequent reported
+`door: "open"` state. Demo/simulated feedback must be marked as such and must not be presented as a
+verified physical sensor reading. The backend contract never includes USB, RS-485, Modbus addresses
+or controller terminal labels; those are local device-gateway configuration.
 

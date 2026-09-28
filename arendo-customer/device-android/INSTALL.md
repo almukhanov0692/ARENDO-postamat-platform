@@ -9,13 +9,6 @@ adb -s DEVICE_SERIAL install -r -d app\build\outputs\apk\debug\app-debug.apk
 adb -s DEVICE_SERIAL shell am start -n kz.arendo.device/.MainActivity
 ```
 
-Для текущего устройства команда выглядит так:
-
-```powershell
-adb -s DEVICE_SERIAL install -r -d app\build\outputs\apk\debug\app-debug.apk
-adb -s DEVICE_SERIAL shell am start -n kz.arendo.device/.MainActivity
-```
-
 Проверка пакета:
 
 ```powershell

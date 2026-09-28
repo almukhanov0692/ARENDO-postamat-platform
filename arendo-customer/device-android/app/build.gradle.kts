@@ -6,6 +6,10 @@ android {
     namespace = "kz.arendo.device"
     compileSdk = 35
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "kz.arendo.device"
         minSdk = 21

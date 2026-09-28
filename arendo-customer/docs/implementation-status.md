@@ -1,6 +1,6 @@
 # ARENDO implementation status
 
-Status date: 27 September 2026
+Status date: 28 September 2026
 Repository: `almukhanov0692/ARENDO-postamat-platform`
 
 This document is the handoff summary for the customer and backend team. It separates the parts that
@@ -22,63 +22,51 @@ specification; they are not replaced with locally invented test numbering.
 
 ### Hardware stand
 
-- Android gateway connects to the I/O module through USB host and a USB-RS485 converter.
-- Baseline serial settings are slave `1`, `9600 8N1`.
-- The supplied BSM-1616RB manual matches the baseline and documents 16 inputs and 16 outputs;
-  one module has enough channel count for the first 14-door stand. The manual's model row describes
-  outputs generically as relay/transistor, so the physical output implementation and revision must
-  be confirmed before connecting lock loads. Its B2 relay diagram uses grouped dry contacts, not
-  powered Y outputs.
-- Four-cell mapping is fixed for the current stand:
-
-  | Cell | Physical input | Physical output |
-  |---|---|---|
-  | 01 | X1 | Y1 |
-  | 02 | X2 | Y2 |
-  | 03 | X3 | Y3 |
-  | 04 | X4 | Y4 |
-
-- Modbus RTU function `0x02` reads the inputs and function `0x05` controls the outputs.
-- CRC validation, response-function validation and write-echo validation are implemented.
-- Only one serial transaction is allowed at a time; polling runs outside the Android UI thread.
+- The Android gateway communicates with the controller locally over USB/RS-485. This physical
+  interface is configured and commissioned on the device side; the backend does not address
+  controller terminals or Modbus points.
+- The exhibition software profile has ten logical output channels and four feedback channels. A
+  door without reliable feedback must be reported as `unknown`; a relay/output command alone is not
+  evidence that a physical door opened.
+- Modbus frame/response validation and serialized background I/O are implemented. Detailed
+  controller mapping remains a device-side commissioning item, separate from the backend contract.
 
 ### Four-button demonstration behavior
 
-- `Y1..Y4`/LED ON is the demonstration meaning of `D1..D4 open`.
-- A transition on the corresponding `X1..X4` button is the demonstration meaning of
-  `D1..D4 closed`.
-- The output is switched off after the close transition.
+- LED/output ON is the simulator's `open` indication; pressing the corresponding button changes the
+  simulated state to `closed` and switches the output off.
 - The stand is a simulator. It does not prove a production lock sensor or a real door sensor.
 - The customer has approved 10 relay channels for the interim exhibition build, according to
-  Nursultan. Nursultan confirmed D01-X1/Y1 through D10-X10/Y10 as the exhibition map. The canonical
-  Android app is now configured to display and poll ten channels, and its debug build compiles.
-  Physical ten-channel feedback has not yet been verified. This demo does not meet T01's
+  Nursultan. The canonical Android app is configured for ten outputs and four input-feedback points;
+  physical output behavior and the final feedback assignment still need verification. This demo
+  does not meet T01's
   14-real-door requirement or replace the 28-door product target.
+- The 28-cell product configuration is not yet commissioned on physical equipment. The current
+  simulator and software tests do not prove the final controller layout or door feedback.
 
 ### Backend integration prototype
 
-The working local prototype was tested separately from the clean customer-facing source tree:
+The current Android source includes the device-side WebSocket client and the local laptop bridge:
 
-- WebSocket connection with a device token header.
-- `hello`/`welcome` registration exchange.
-- Heartbeat and cell-state feedback.
-- Addressed cell command and acknowledgement.
-- Reconnect after connection loss.
-- Windows local WebSocket monitor for sending test commands and viewing device status.
+- The app sends the device token in `X-Device-Token`; the token is not logged or saved with URL settings.
+- `hello`/`welcome`, heartbeat, `open_cell`, `cell_report`, acknowledgements and demo door events are implemented.
+- Reconnect uses bounded backoff. Processed command IDs are persisted locally to prevent repeating an open operation.
+- The temporary bridge requires a matching token. Its command/dashboard API binds to laptop loopback; only the WebSocket port is intended for LAN/ngrok testing.
+- Android unit tests and debug APK build pass. The demonstration log showed WebSocket registration
+  and heartbeats; Modbus read timeouts remain in the log, so complete physical I/O-to-backend
+  acceptance is still outstanding.
 
 The canonical message contract is documented in [`protocols/backend-v1.md`](protocols/backend-v1.md).
-No production token, certificate exception, private key or local machine address is part of this
-repository.
+The laptop bridge remains an in-memory development tool, not Sarvar's production server.
 
 ## Not production-ready yet
 
 These items must not be presented as completed:
 
-1. Merge the tested WebSocket client into the canonical `kz.arendo.device` module with a production
-   configuration store.
-2. Add durable offline event storage, replay with stable `eventId`, command idempotency and a safe
-   reconnect rule that cannot execute an old `open_cell` command.
-3. Finish backend authentication, token rotation/revocation and canonical command signature rules.
+1. Add production configuration storage and server-issued credentials.
+2. Add durable offline event storage and replay with stable `eventId`; agree final idempotency and
+   command-signature rules with the backend.
+3. Finish production authentication, token rotation/revocation and canonical command verification.
 4. Replace the button/LED simulation with the approved lock and physical door sensor, then validate
    `open`, `closed`, `door_not_closed`, `unknown` and hardware-fault states.
 5. Complete server-side command lifecycle and offline detection: created, delivered, acknowledged,
@@ -107,7 +95,8 @@ Minimum server behavior:
 - send `welcome` with heartbeat/ping timing;
 - route `open_cell` only to the matching `postamatId` and `cellCode`;
 - persist and deduplicate command results;
-- display `D1 open`, `D1 closed` (and the same for D2-D4) from device events/heartbeats;
+- display `D1 open` / `D1 closed` (and the same format for each configured cell) from device
+  events/heartbeats; show `unknown` when feedback is unavailable;
 - mark a device offline after the negotiated heartbeat timeout;
 - never replay an expired opening command after reconnect;
 - acknowledge and store events without double-counting them.
@@ -115,7 +104,6 @@ Minimum server behavior:
 See the protocol and test documents before changing field names:
 
 - [`protocols/backend-v1.md`](protocols/backend-v1.md)
-- [`protocols/modbus-gateway-v1.md`](protocols/modbus-gateway-v1.md)
 - [`testing/acceptance-matrix.md`](testing/acceptance-matrix.md)
 
 ## Evidence and scope note

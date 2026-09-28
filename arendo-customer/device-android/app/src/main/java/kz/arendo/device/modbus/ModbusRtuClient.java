@@ -13,13 +13,24 @@ public final class ModbusRtuClient {
 
     public synchronized boolean[] readDiscreteInputs(int slaveId, int startAddress, int quantity)
             throws IOException {
+        return readBits(slaveId, startAddress, quantity, 0x02);
+    }
+
+    /** Reads relay/coil output states; this is not proof of physical door position. */
+    public synchronized boolean[] readCoils(int slaveId, int startAddress, int quantity)
+            throws IOException {
+        return readBits(slaveId, startAddress, quantity, 0x01);
+    }
+
+    private boolean[] readBits(int slaveId, int startAddress, int quantity, int function)
+            throws IOException {
         checkRange(slaveId, startAddress, quantity);
         int payloadBytes = (quantity + 7) / 8;
-        byte[] response = transact(frame(slaveId, 0x02, startAddress, quantity),
-                0x02, 5 + payloadBytes);
+        byte[] response = transact(frame(slaveId, function, startAddress, quantity),
+                slaveId, function, 5 + payloadBytes);
         int byteCount = response[2] & 0xFF;
         if (byteCount != payloadBytes) {
-            throw new IOException("Unexpected input byte count: " + byteCount);
+            throw new IOException("Unexpected bit response byte count: " + byteCount);
         }
         boolean[] values = new boolean[quantity];
         for (int index = 0; index < quantity; index++) {
@@ -33,7 +44,7 @@ public final class ModbusRtuClient {
         checkRange(slaveId, address, 1);
         int value = enabled ? 0xFF00 : 0x0000;
         byte[] request = frame(slaveId, 0x05, address, value);
-        byte[] response = transact(request, 0x05, 8);
+        byte[] response = transact(request, slaveId, 0x05, 8);
         for (int index = 0; index < 6; index++) {
             if (response[index] != request[index]) {
                 throw new IOException("Coil write echo mismatch");
@@ -41,7 +52,8 @@ public final class ModbusRtuClient {
         }
     }
 
-    private byte[] transact(byte[] request, int expectedFunction, int expectedLength)
+    private byte[] transact(byte[] request, int expectedSlaveId, int expectedFunction,
+            int expectedLength)
             throws IOException {
         transport.write(request, 1000);
         ByteArrayOutputStream received = new ByteArrayOutputStream();
@@ -57,13 +69,14 @@ public final class ModbusRtuClient {
             byte[] current = received.toByteArray();
             if (current.length >= 2 && (current[1] & 0x80) != 0) {
                 targetLength = 5;
-            } else if (current.length >= 3 && expectedFunction == 0x02) {
+            } else if (current.length >= 3
+                    && (expectedFunction == 0x01 || expectedFunction == 0x02)) {
                 targetLength = 5 + (current[2] & 0xFF);
             }
             if (current.length >= targetLength) {
                 byte[] response = new byte[targetLength];
                 System.arraycopy(current, 0, response, 0, targetLength);
-                validate(response, expectedFunction);
+                validate(response, expectedSlaveId, expectedFunction);
                 return response;
             }
         }
@@ -95,9 +108,13 @@ public final class ModbusRtuClient {
         return crc & 0xFFFF;
     }
 
-    private static void validate(byte[] response, int expectedFunction) throws IOException {
+    private static void validate(byte[] response, int expectedSlaveId, int expectedFunction)
+            throws IOException {
         if (response.length < 5) {
             throw new IOException("Short Modbus response");
+        }
+        if ((response[0] & 0xFF) != expectedSlaveId) {
+            throw new IOException("Unexpected Modbus slave: " + (response[0] & 0xFF));
         }
         int function = response[1] & 0xFF;
         if ((function & 0x80) != 0) {

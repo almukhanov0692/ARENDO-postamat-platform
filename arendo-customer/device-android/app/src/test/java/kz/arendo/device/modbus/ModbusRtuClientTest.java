@@ -39,6 +39,28 @@ public final class ModbusRtuClientTest {
     }
 
     @Test
+    public void readsFourCoilStatesFromMockTransport() throws Exception {
+        byte[] body = {0x01, 0x01, 0x01, 0x05};
+        FakeTransport transport = new FakeTransport(withCrc(body));
+
+        boolean[] values = new ModbusRtuClient(transport).readCoils(1, 0, 4);
+
+        assertTrue(values[0]);
+        assertFalse(values[1]);
+        assertTrue(values[2]);
+        assertFalse(values[3]);
+        assertArrayEquals(ModbusRtuClient.frame(1, 0x01, 0, 4), transport.lastWrite);
+    }
+
+    @Test(expected = IOException.class)
+    public void rejectsValidResponseFromDifferentSlaveId() throws Exception {
+        byte[] body = {0x02, 0x02, 0x01, 0x01};
+        FakeTransport transport = new FakeTransport(withCrc(body));
+
+        new ModbusRtuClient(transport).readDiscreteInputs(1, 0, 1);
+    }
+
+    @Test
     public void writesSingleCoilAndValidatesEcho() throws Exception {
         byte[] response = ModbusRtuClient.frame(1, 0x05, 2, 0xFF00);
         FakeTransport transport = new FakeTransport(response);

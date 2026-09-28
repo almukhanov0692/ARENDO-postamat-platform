@@ -56,9 +56,15 @@ server demonstration was exercised separately, but its production-safe implement
 merged into the canonical gateway. No 14-door physical acceptance, technician grant flow, durable
 offline event queue, update/rollback, GPS, advertising/audio or final handover has been demonstrated.
 
-The next implementation gate is to implement the confirmed 10-channel configuration in the Android
-gateway and verify each input/output safely on the exhibition hardware. Then confirm the physical
-BSM-1616RB revision/output type, electrical load design and multi-module addressing for the 14/28
-door scope. The test matrix in
+The gateway now routes configured logical cells by module slave ID and local X/Y point. A sequential
+two-module/28-cell arrangement exists only as a unit-tested routing fixture; the active APK remains
+on the approved ten-cell, slave-1 exhibition profile. Nursultan reports two 16-in/16-out BSM modules
+on one shared RS-485 bus for the 28-cell design. Unique IDs and the physical cell-to-module map have
+not yet been commissioned; the fixture is not an approved wiring plan.
+
+The next gate in Stage 1 is physical verification of the existing ten-channel exhibition map,
+followed by confirming the fitted BSM revision/output type and electrical design. For the formal
+acceptance path, assemble and test the first 14 real doors (two seven-cell cabinet sections), record
+the actual cell-to-module map, set and power-cycle-test unique Modbus IDs, then run T01-T05. The test matrix in
 [`testing/acceptance-matrix.md`](testing/acceptance-matrix.md) tracks evidence using the original
 T01-T26 identifiers from the specification.
