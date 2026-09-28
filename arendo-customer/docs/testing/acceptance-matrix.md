@@ -3,12 +3,12 @@
 Test IDs and acceptance outcomes below follow the source specification in scope. Status means
 evidence in the canonical project/physical stand, not a statement that work is underway.
 
-Status values: `not started`, `partial`, `passed`, `blocked`. `partial` means only a narrower
+Status values: `not started`, `partial`, `passed`, `blocked`, `deferred`. `partial` means only a narrower
 prototype or subset has evidence; it does not satisfy the full test.
 
 | Test | Acceptance scope | Owner(s) | Status | Evidence / remaining gap |
 |---|---|---|---|---|
-| T01 | Two seven-cell modules; address each of 14 real locks and confirm door sensors, with no other lock actuating. | Nursultan | not started | Customer approved a 10-relay exhibition build and Nursultan confirmed its D01-X1/Y1 through D10-X10/Y10 map. The app is configured for ten channels, but physical feedback is unverified and the 14-real-door stand is not evidenced; exhibition approval does not replace T01. |
+| T01 | Two seven-cell modules; address each of 14 real locks and confirm door sensors, with no other lock actuating. | Nursultan | not started | Customer approved a 10-output exhibition build. The active app maps D01-D10 to Y1-Y10, but only D01-D04 have X1-X4 feedback; D05-D10 have no feedback. The ordered locks and 14-real-door stand are not yet accepted; exhibition approval does not replace T01. |
 | T02 | Add the second cabinet in the chain without reworking existing harnesses; addresses do not conflict and inventory updates. | Nursultan | not started | Android routing code now distinguishes cells by module slave ID and local channel; this has unit-test coverage only. Physical topology, unique module IDs, commissioned map and inventory update remain unverified. |
 | T03 | Calculations and a verification plan for 28 physical cells and 32 logical channels. | Nursultan | partial | Requirement documented; approved electrical calculations and validated production map remain. |
 | T04 | Power loss keeps closed doors locked; restart reads sensors and saved blocks without spontaneous opening. | Nursultan | not started | Real lock power-loss/restart acceptance not evidenced. |
@@ -31,16 +31,17 @@ prototype or subset has evidence; it does not satisfy the full test.
 | T21 | Failed download/install/start/power interruption preserves a working version; automatic rollback and USB recovery demonstrated. | Nursultan | not started | A/B or equivalent recovery design not selected. |
 | T22 | Previous version remains until both device and server confirm the new version; server loss is not success. | Nursultan + Sarvar | not started | Two-party update confirmation protocol not implemented. |
 | T23 | GPS reports coordinates and server-confirmed binding inside target building; or separately approved manual alternative works. | Nursultan (device GPS) + Sarvar (server binding API) | deferred | Device-side GPS path and indoor acceptance not implemented; server API is agreed when Nursultan provides the payload; manual alternative requires approval. |
-| T24 | Handover instructions reproduce installable builds on the declared Android device matrix. | Nursultan | partial | Canonical APK builds and RK3568/API 25 install is evidenced; supported-device matrix and independent reproduction remain. |
+| T24 | Handover instructions reproduce installable builds on the declared Android device matrix. | Nursultan | partial | APK 0.2.1 builds and was installed on INBOX710 (RK3399, API 25). RK3568 and the supported-device matrix require separate tests; independent reproduction remains. |
 | T25 | Nursultan participates in first full build/start; real doors, backend, USB, sound and display are checked. | Nursultan + Sarvar | not started | Full postamat build and integrated acceptance not evidenced. |
 | T26 | Another specialist can assemble, configure and test from delivered docs, access and materials. | Nursultan | partial | Source/docs exist; complete manufacturing/service package and independent handover test remain. |
 
 ## Demonstration evidence boundary
 
-The four-button/LED bench can demonstrate one simulated cell's command/output/input/status path.
-It is not a pass for T01, T04, T05 or T13's real-sensor requirement. The separately exercised
-WebSocket/local-server prototype is not evidence that production-safe command security, offline
-replay or the complete server contract is integrated into the canonical Android gateway.
+The ten-output/four-input laboratory stand demonstrates a simulated command/input/status path.
+Its APK 0.2.1 and temporary laptop bridge exchanged `hello`, heartbeat and `cell_report` ACK, and
+X-input changes were observed on the APK and local monitor. This is not a pass for T01, T04, T05
+or T13's real-lock and real-sensor requirements. It also does not establish production-safe command
+security, offline event replay or acceptance against the real backend.
 
 Record the hardware models/revisions, wiring/map revision, Android build, application version,
 server version, exact steps, result, timestamps and logs for every acceptance run. Any failed or
