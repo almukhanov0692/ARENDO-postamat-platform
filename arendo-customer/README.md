@@ -12,7 +12,8 @@ MVP foundation validated on the laboratory four-cell stand. The project is not p
 must not be used to operate public postamats yet. See
 [`docs/implementation-status.md`](docs/implementation-status.md) for the current delivery status and
 the remaining work, and [`docs/implementation-plan.md`](docs/implementation-plan.md) for the staged
-implementation sequence and exit gates.
+implementation sequence and exit gates. The dated progress report is in
+[`docs/progress-report-2026-09-28-ru.md`](docs/progress-report-2026-09-28-ru.md).
 
 ## Components
 

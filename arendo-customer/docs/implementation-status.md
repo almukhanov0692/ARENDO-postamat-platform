@@ -32,6 +32,18 @@ specification; they are not replaced with locally invented test numbering.
 - Modbus frame/response validation and serialized background I/O are implemented. Detailed
   controller mapping remains a device-side commissioning item, separate from the backend contract.
 
+### Electrical drawing update — 28 September 2026
+
+- Added a clear overview drawing for the current ten-output/four-input stand: Android USB → USB-RS485,
+  `A→A` / `B→B`, relay-switched positive to each lock, shared lock return, and feedback inputs `X1-X4`.
+- Recorded the BSM input polarity rule from its manual: with `S/S` tied to `GND`, an input is active
+  on a positive signal; with `S/S` tied to module `VCC`, it is active on a negative signal. The lock's
+  two feedback wires still need checking on the actual part before their exact connection is assigned.
+- The drawing register now names the remaining terminal map, power/protection, cabinet/cable, and AC/PE
+  drawings. Procurement quantities and indicative prices are already documented separately.
+- This improves the hardware handoff but does not change any physical acceptance result: no real lock,
+  28-cell cabinet, or production wiring has passed commissioning yet.
+
 ### Ten-output / four-input demonstration behavior
 
 - An `open_cell` command pulses one output for 2 seconds, then automatically switches it OFF. Output

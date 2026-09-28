@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="900" viewBox="0 0 1500 900" role="img" aria-label="ARENDO: Android, Modbus, питание десяти замков и четыре сигнальных входа">
+  <defs><style>
+    text{font-family:Arial,'DejaVu Sans',sans-serif;fill:#17283a}
+    .title{font-size:36px;font-weight:700}.sub{font-size:21px;fill:#526277}
+    .section{font-size:27px;font-weight:700}.name{font-size:24px;font-weight:700}
+    .body{font-size:22px}.note{font-size:19px;fill:#526277}
+    .blue{fill:#245da4}.red{fill:#ae4539}.green{fill:#247959}
+    .card{fill:#fff;stroke:#b6c5d5;stroke-width:2}
+    .data{stroke:#245da4;stroke-width:5;fill:none;stroke-linecap:round}
+    .power{stroke:#ae4539;stroke-width:5;fill:none;stroke-linecap:round}
+    .return{stroke:#334454;stroke-width:5;fill:none;stroke-linecap:round}
+    .feedback{stroke:#247959;stroke-width:5;fill:none;stroke-linecap:round}
+  </style></defs>
+  <rect width="1500" height="900" fill="#f7f9fc"/>
+  <text x="40" y="59" class="title">ARENDO · как соединяются узлы</text>
+  <text x="40" y="91" class="sub">Нынешний стенд: 10 выходов Y и 4 входа X</text>
+  <rect x="32" y="119" width="1436" height="177" rx="15" fill="#eaf2fc"/>
+  <text x="56" y="160" class="section blue">1. Связь</text>
+  <rect x="56" y="184" width="296" height="77" rx="11" class="card"/><text x="76" y="230" class="name">Android · USB</text>
+  <rect x="566" y="184" width="348" height="77" rx="11" class="card"/><text x="586" y="230" class="name">USB–RS‑485</text>
+  <rect x="1128" y="184" width="316" height="77" rx="11" class="card"/><text x="1148" y="230" class="name">Modbus · A / B</text>
+  <path d="M352 222 H566 M914 222 H1128" class="data"/>
+  <text x="391" y="204" class="body blue">USB</text><text x="943" y="204" class="body blue">A → A  ·  B → B</text>
+  <text x="56" y="282" class="note">Второй модуль позже подключается к той же линии A/B, но с другим Modbus-адресом.</text>
+  <rect x="32" y="314" width="1436" height="285" rx="15" fill="#fff1ee"/>
+  <text x="56" y="355" class="section red">2. Питание замков</text>
+  <rect x="56" y="392" width="294" height="120" rx="11" class="card"/>
+  <text x="76" y="432" class="name">Блок питания</text><text x="76" y="466" class="body red">Плюс (+)</text><text x="76" y="495" class="body">Общий минус (0 В)</text>
+  <rect x="570" y="392" width="350" height="120" rx="11" class="card"/>
+  <text x="590" y="432" class="name">Реле Modbus</text><text x="590" y="469" class="body">COM1 / COM2 · Y1–Y10</text>
+  <rect x="1130" y="392" width="314" height="120" rx="11" class="card"/>
+  <text x="1150" y="432" class="name">Замки D01–D10</text><text x="1150" y="469" class="body">отдельно каждый</text>
+  <path d="M350 432 H570 M920 432 H1130" class="power"/>
+  <text x="396" y="414" class="body red">+ → COM</text><text x="963" y="414" class="body red">Y → замок +</text>
+  <path d="M1130 486 H1060 V550 H206 V512" class="return"/>
+  <text x="495" y="541" class="body">Общий минус замков → 0 В блока</text>
+  <text x="56" y="584" class="note">Пример: D03 — выход Y3 подаёт импульс на замок, затем выключается.</text>
+  <rect x="32" y="617" width="1436" height="205" rx="15" fill="#eaf7f0"/>
+  <text x="56" y="658" class="section green">3. Обратный сигнал</text>
+  <rect x="56" y="692" width="375" height="77" rx="11" class="card"/>
+  <text x="76" y="727" class="name">Сигнальная пара замка</text><text x="76" y="752" class="note">Провод 1: плюс или минус</text>
+  <rect x="1035" y="692" width="409" height="77" rx="11" class="card"/>
+  <text x="1055" y="727" class="name">Modbus · X1–X4</text><text x="1055" y="752" class="note">Провод 2: на вход X</text>
+  <path d="M431 731 H1035" class="feedback"/>
+  <text x="574" y="713" class="body green">D01→X1 · D02→X2 · D03→X3 · D04→X4</text>
+  <text x="56" y="806" class="note">Сейчас S/S → GND, вход X срабатывает от плюса. Если S/S → плюс, X срабатывает от минуса.</text>
+  <text x="40" y="858" class="note">Точную сигнальную пару и допустимую нагрузку реле проверим на полученных замках перед монтажом.</text>
+</svg>
