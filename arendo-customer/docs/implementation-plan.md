@@ -49,6 +49,9 @@ Stage 0 is in progress. The repository contains a buildable Android gateway test
 (RK3399), a ten-channel
 exhibition profile, a WebSocket device client and the temporary laptop bridge. The current
 button/LED feedback is explicitly simulated; physical lock and door-sensor acceptance remains open.
+The procurement estimate is documented. Electrical drawing E-000 now summarizes the exhibition
+stand; E-001/E-002 and the remaining production drawing set are tracked in
+[`hardware/electrical-r0/README.md`](hardware/electrical-r0/README.md).
 The APK implements `hello`, heartbeat, `open_cell` (2-second output pulse with automatic OFF),
 `cell_report`, ACK and demo X-input door events. Backend storage, UI, server-side offline detection
 and production credentials/signatures still need to be completed against
