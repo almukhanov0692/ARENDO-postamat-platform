@@ -23,6 +23,8 @@ implementation sequence and exit gates.
 - `docs/testing/` - acceptance traceability for the original tests T01-T26 in the specification.
 - `docs/decisions/` - architecture decisions and unresolved choices.
 - `docs/procurement/` - approved equipment list and indicative cost estimate.
+- [`docs/hardware/electrical-r0/`](docs/hardware/electrical-r0/README.md) - preliminary USB–RS485,
+  Modbus, lock-power and feedback drawings; not yet an installation release.
 - [`docs/procurement/clarification-01-cable-and-lock-quantity-ru.md`](docs/procurement/clarification-01-cable-and-lock-quantity-ru.md) - buyer response, equipment quantities, supplier cards and technical caveats.
 
 Backend integration handoff and open questions: [`docs/protocols/backend-developer-handoff-ru.md`](docs/protocols/backend-developer-handoff-ru.md).

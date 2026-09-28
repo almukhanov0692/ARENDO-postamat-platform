@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="850" viewBox="0 0 1500 850" role="img" aria-label="ARENDO preliminary USB RS485 Modbus topology">
+  <defs>
+    <style>
+      text { font-family: Arial, 'DejaVu Sans', sans-serif; fill: #142235; }
+      .title { font-size: 31px; font-weight: bold; }
+      .sub { font-size: 17px; }
+      .section { font-size: 21px; font-weight: bold; }
+      .boxTitle { font-size: 20px; font-weight: bold; }
+      .body { font-size: 16px; }
+      .small { font-size: 14px; }
+      .warning { fill: #9b1c1c; font-size: 17px; font-weight: bold; }
+      .box { fill: #f2f7fb; stroke: #31506c; stroke-width: 2; }
+      .future { fill: #fbfbfc; stroke: #758698; stroke-width: 2; stroke-dasharray: 9 6; }
+      .wire { fill: none; stroke: #24578a; stroke-width: 3; marker-end: url(#arrow); }
+      .power { fill: none; stroke: #b95822; stroke-width: 3; marker-end: url(#arrowPower); }
+    </style>
+    <marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M 0 0 L 11 5.5 L 0 11 z" fill="#24578a"/></marker>
+    <marker id="arrowPower" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M 0 0 L 11 5.5 L 0 11 z" fill="#b95822"/></marker>
+  </defs>
+  <rect width="1500" height="850" fill="#fff"/>
+  <text x="40" y="48" class="title">E-001. ARENDO — связь контроллера и Modbus</text>
+  <text x="40" y="77" class="warning">R0 ДЛЯ СОГЛАСОВАНИЯ • НЕ МОНТАЖНАЯ СХЕМА • 220 В НЕ ПОКАЗАНЫ</text>
+  <line x1="40" y1="95" x2="1460" y2="95" stroke="#31506c" stroke-width="2"/>
+
+  <text x="40" y="135" class="section">A. Проверенный лабораторный профиль: 10 выходов / 4 входа</text>
+  <rect x="40" y="165" width="340" height="180" rx="8" class="box"/>
+  <text x="60" y="199" class="boxTitle">C1. Android-шлюз</text>
+  <text x="60" y="230" class="body">INBOX710 / RK3399 / APK 0.2.1</text>
+  <text x="60" y="258" class="body">Команды WebSocket → Modbus RTU</text>
+  <text x="60" y="286" class="body">Один USB host-порт</text>
+  <text x="60" y="319" class="small">RK3568 ещё не испытан на этом стенде.</text>
+
+  <rect x="500" y="180" width="275" height="150" rx="8" class="box"/>
+  <text x="520" y="216" class="boxTitle">U1. USB–RS485</text>
+  <text x="520" y="247" class="body">USB со стороны Android</text>
+  <text x="520" y="274" class="body">A/B со стороны шины</text>
+  <text x="520" y="303" class="small">Модель/клеммы — подтвердить</text>
+
+  <rect x="895" y="165" width="565" height="180" rx="8" class="box"/>
+  <text x="915" y="199" class="boxTitle">M1. Текущий I/O-модуль</text>
+  <text x="915" y="230" class="body">Надпись со слов владельца: BCM 04 10 R B</text>
+  <text x="915" y="258" class="body">Вероятный профиль BSM-0410RB · slave ID 1</text>
+  <text x="915" y="286" class="body">D01–D10 → Y1–Y10 · D01–D04 ← X1–X4</text>
+  <text x="915" y="319" class="small">9600 8N1 · точный шильдик и тип выходов TBD</text>
+
+  <path d="M 380 252 H 500" class="wire"/><text x="408" y="236" class="body">USB</text>
+  <path d="M 775 252 H 895" class="wire"/><text x="795" y="231" class="body">RS-485 A/B</text>
+  <text x="798" y="279" class="small">Одна шина</text>
+
+  <rect x="40" y="380" width="1420" height="122" rx="8" fill="#fff8ef" stroke="#b95822" stroke-width="2"/>
+  <text x="60" y="415" class="boxTitle">P1. Питание: разделить цепи и подтвердить номиналы</text>
+  <text x="60" y="446" class="body">12 В / 50 А — предложенный блок для замков; защиту каждой ветви, коммутацию и подавление выброса выбрать после измерений.</text>
+  <text x="60" y="476" class="body">Питание C1 и VCC/GND M1 подключать только после проверки шильдиков. Схема AC-ввода и PE — отдельный лист электрика.</text>
+
+  <text x="40" y="550" class="section">B. Кандидат на 28 дверей: НЕ смонтирован, адреса требуют записи в модули</text>
+  <rect x="40" y="575" width="300" height="145" rx="8" class="future"/>
+  <text x="60" y="609" class="boxTitle">C2. Будущий Android</text>
+  <text x="60" y="637" class="body">RK3568 (предложен)</text>
+  <text x="60" y="664" class="body">USB → U2 USB–RS485</text>
+  <text x="60" y="694" class="small">Один Modbus-мастер</text>
+
+  <rect x="510" y="575" width="360" height="145" rx="8" class="future"/>
+  <text x="530" y="609" class="boxTitle">M2. BSM-1616RB #1</text>
+  <text x="530" y="637" class="body">Предлагаемый slave ID 1</text>
+  <text x="530" y="664" class="body">D01–D16 → Y1–Y16</text>
+  <text x="530" y="690" class="body">D01–D16 ← X1–X16</text>
+
+  <rect x="1010" y="575" width="450" height="145" rx="8" class="future"/>
+  <text x="1030" y="609" class="boxTitle">M3. BSM-1616RB #2</text>
+  <text x="1030" y="637" class="body">Предлагаемый slave ID 2</text>
+  <text x="1030" y="664" class="body">D17–D28 → Y1–Y12; ← X1–X12</text>
+  <text x="1030" y="690" class="body">Y13–Y16 / X13–X16 — резерв</text>
+
+  <path d="M 340 645 H 510" class="wire"/>
+  <path d="M 870 645 H 1010" class="wire"/>
+  <text x="366" y="626" class="small">USB–RS485, A/B</text>
+  <text x="907" y="626" class="small">A/B общие</text>
+  <text x="40" y="762" class="body">Пример: D18 = slave ID 2, локальные Y2/X2. Второй модуль НЕ подключается к «другому порту ячейки».</text>
+  <line x1="40" y1="792" x2="1460" y2="792" stroke="#31506c" stroke-width="2"/>
+  <text x="40" y="820" class="small">Проект: ARENDO  |  Лист E-001  |  Ревизия R0  |  28.09.2026  |  Проверка: маркировка, Modbus ID, питание, топология RS-485</text>
+</svg>

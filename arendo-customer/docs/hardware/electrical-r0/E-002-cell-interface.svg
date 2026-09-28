@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="980" viewBox="0 0 1500 980" role="img" aria-label="ARENDO preliminary one-cell lock and feedback interface">
+  <defs>
+    <style>
+      text { font-family: Arial, 'DejaVu Sans', sans-serif; fill: #142235; }
+      .title { font-size: 31px; font-weight: bold; }
+      .section { font-size: 23px; font-weight: bold; }
+      .boxTitle { font-size: 20px; font-weight: bold; }
+      .body { font-size: 17px; }
+      .small { font-size: 15px; }
+      .warn { fill: #9b1c1c; font-size: 17px; font-weight: bold; }
+      .box { fill: #f2f7fb; stroke: #31506c; stroke-width: 2; }
+      .unknown { fill: #fff9eb; stroke: #c07424; stroke-width: 2; stroke-dasharray: 8 5; }
+      .power { fill: none; stroke: #b34b30; stroke-width: 4; marker-end: url(#redArrow); }
+      .return { fill: none; stroke: #31506c; stroke-width: 3; marker-end: url(#blueArrow); }
+      .signal { fill: none; stroke: #2f7a62; stroke-width: 3; marker-end: url(#greenArrow); }
+      .dash { fill: none; stroke: #c07424; stroke-width: 3; stroke-dasharray: 8 5; marker-end: url(#orangeArrow); }
+    </style>
+    <marker id="redArrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0 0 L11 5.5 L0 11 z" fill="#b34b30"/></marker>
+    <marker id="blueArrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0 0 L11 5.5 L0 11 z" fill="#31506c"/></marker>
+    <marker id="greenArrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0 0 L11 5.5 L0 11 z" fill="#2f7a62"/></marker>
+    <marker id="orangeArrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0 0 L11 5.5 L0 11 z" fill="#c07424"/></marker>
+  </defs>
+  <rect width="1500" height="980" fill="#fff"/>
+  <text x="40" y="49" class="title">E-002. ARENDO — одна ячейка: питание замка и обратный сигнал</text>
+  <text x="40" y="79" class="warn">R0 ДЛЯ СОГЛАСОВАНИЯ • КЛЕММЫ И ЦВЕТА 4 ПРОВОДОВ НЕ УТВЕРЖДЕНЫ • НЕ ПОДКЛЮЧАТЬ ПО ЭТОМУ ЛИСТУ</text>
+  <line x1="40" y1="96" x2="1460" y2="96" stroke="#31506c" stroke-width="2"/>
+
+  <text x="40" y="139" class="section">A. Силовая пара замка — выделенная ветвь 12 В</text>
+  <rect x="40" y="165" width="245" height="150" rx="8" class="box"/>
+  <text x="59" y="201" class="boxTitle">P1. Блок DC</text>
+  <text x="59" y="231" class="body">12 В / 50 А предложен</text>
+  <text x="59" y="259" class="body">+12 В и 0 В</text>
+  <text x="59" y="290" class="small">Шильдик проверить</text>
+
+  <rect x="375" y="185" width="218" height="110" rx="8" class="unknown"/>
+  <text x="395" y="223" class="boxTitle">F-Dn. Защита</text>
+  <text x="395" y="252" class="body">Номинал TBD</text>
+  <text x="395" y="278" class="small">Одна ветвь / замок</text>
+
+  <rect x="690" y="170" width="345" height="140" rx="8" class="unknown"/>
+  <text x="710" y="205" class="boxTitle">K-Dn. Коммутация TBD</text>
+  <text x="710" y="235" class="body">Ток, индуктивность, ресурс</text>
+  <text x="710" y="264" class="body">и защита катушки — проверить</text>
+  <text x="710" y="289" class="small">Не считать 2 А B2 запасом</text>
+
+  <rect x="1132" y="165" width="328" height="150" rx="8" class="box"/>
+  <text x="1152" y="201" class="boxTitle">L-Dn. Замок, 4 провода</text>
+  <text x="1152" y="231" class="body">Пара 1: L+ / L− (12 В)</text>
+  <text x="1152" y="259" class="body">Пара 2: FB-A / FB-B</text>
+  <text x="1152" y="289" class="small">Функцию FB проверить</text>
+
+  <path d="M285 218 H375" class="power"/><path d="M593 218 H690" class="power"/><path d="M1035 218 H1132" class="power"/>
+  <text x="303" y="203" class="small">+12 В</text><text x="619" y="203" class="small">+12 В</text><text x="1055" y="203" class="small">L+</text>
+  <path d="M1132 279 H1090 V348 H169 V315" class="return"/>
+  <text x="570" y="341" class="small">L− → 0 В P1 (обратный провод силовой пары)</text>
+
+  <rect x="40" y="385" width="1420" height="122" rx="8" fill="#fff4f3" stroke="#b34b30" stroke-width="2"/>
+  <text x="60" y="418" class="warn">ВНИМАНИЕ: выход B2 в руководстве — сухой контакт, указанный предел 2 А.</text>
+  <text x="60" y="448" class="body">Выбранный замок заявлен как 12 В / 2 А; пусковой ток и допустимость индуктивной нагрузки неизвестны.</text>
+  <text x="60" y="477" class="body">M1 Y/COM может управлять K-Dn только после выбора совместимого интерфейса. Прямой силовой путь Y/COM → замок здесь НЕ утверждён.</text>
+
+  <text x="40" y="552" class="section">B. Обратная пара замка — тип и смысл сигнала НЕ установлены</text>
+  <rect x="40" y="580" width="420" height="172" rx="8" class="box"/>
+  <text x="60" y="616" class="boxTitle">FB-A / FB-B от L-Dn</text>
+  <text x="60" y="647" class="body">При снятом питании: прозвонить контакт</text>
+  <text x="60" y="676" class="body">При испытании: измерить напряжение</text>
+  <text x="60" y="707" class="small">Закрыто / отпирание / открыто / вновь закрыто</text>
+  <text x="60" y="734" class="small">Дверь? защёлка? крюк? Не предполагать.</text>
+
+  <rect x="555" y="592" width="390" height="148" rx="8" class="unknown"/>
+  <text x="575" y="628" class="boxTitle">I-Dn. Входной интерфейс TBD</text>
+  <text x="575" y="659" class="body">Сухой контакт или активный выход?</text>
+  <text x="575" y="688" class="body">Нужна ли развязка/согласование?</text>
+  <text x="575" y="718" class="small">До ответа FB не вести на X напрямую.</text>
+
+  <rect x="1040" y="580" width="420" height="172" rx="8" class="box"/>
+  <text x="1060" y="616" class="boxTitle">M1. Входы Modbus</text>
+  <text x="1060" y="647" class="body">Xn = сигнал двери/замка после проверки</text>
+  <text x="1060" y="676" class="body">S/S сейчас связан с GND</text>
+  <text x="1060" y="707" class="body">Активный +12 В → бит X = 1</text>
+  <text x="1060" y="734" class="small">Аппаратный режим должен совпадать с APK.</text>
+
+  <path d="M460 666 H555" class="dash"/><path d="M945 666 H1040" class="dash"/>
+  <text x="467" y="649" class="small">Неизвестно</text><text x="956" y="649" class="small">После проверки</text>
+
+  <rect x="40" y="789" width="1420" height="123" rx="8" fill="#eef8f3" stroke="#2f7a62" stroke-width="2"/>
+  <text x="60" y="822" class="boxTitle">Отдельно: только текущий лабораторный тест входа X</text>
+  <text x="60" y="850" class="body">При S/S → GND: +12 В → тестовый контакт → Xn. APK сейчас трактует активный X как closed, неактивный X как open.</text>
+  <text x="60" y="880" class="body">Это НЕ схема неизвестной FB-пары замка. Обрыв провода тоже может выглядеть как «нет сигнала»; физическое open не доказано.</text>
+
+  <line x1="40" y1="935" x2="1460" y2="935" stroke="#31506c" stroke-width="2"/>
+  <text x="40" y="964" class="small">Проект: ARENDO  |  Лист E-002  |  Ревизия R0  |  28.09.2026  |  Перед R1: паспорт, измерения, предохранители, драйвер, обратный сигнал</text>
+</svg>

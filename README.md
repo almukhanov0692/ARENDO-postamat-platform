@@ -13,6 +13,7 @@ Current device-gateway release: **0.2.1** (28 September 2026). See [changes](CHA
 - [Current demo WebSocket exchange, with JSON examples](arendo-customer/docs/protocols/demo-websocket-handoff-ru.md)
 - [Ready-to-send backend developer handoff and questions](arendo-customer/docs/protocols/backend-developer-handoff-ru.md)
 - [Equipment and indicative prices](arendo-customer/docs/procurement/equipment-estimate-2026-09.md)
+- [Preliminary electrical drawings R0 — not for installation](arendo-customer/docs/hardware/electrical-r0/README.md)
 - [Full procurement clarification and supplier links](arendo-customer/docs/procurement/clarification-01-cable-and-lock-quantity-ru.md)
 - [Temporary laptop WebSocket bridge](local-server/README.md)
 
