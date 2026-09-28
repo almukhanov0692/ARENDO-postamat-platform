@@ -3,7 +3,12 @@ import socket
 import threading
 import unittest
 
-from postamat_server import PostamatState, WebSocketRequestHandler, WebSocketServer
+from postamat_server import (
+    PostamatState,
+    WebSocketRequestHandler,
+    WebSocketServer,
+    dashboard_html,
+)
 
 
 class WebSocketTokenTests(unittest.TestCase):
@@ -69,6 +74,29 @@ class CellCodeTests(unittest.TestCase):
     def test_rejects_out_of_range_cells(self):
         self.assertIsNone(self.state._normalise_cell("D11"))
         self.assertIsNone(self.state._normalise_cell("door"))
+
+
+class CommandEnvelopeTests(unittest.TestCase):
+    def test_command_targets_the_connected_postamat(self):
+        class RecordingClient:
+            def __init__(self):
+                self.messages = []
+
+            def send_json(self, message):
+                self.messages.append(message)
+
+        state = PostamatState("demo-device-token")
+        state.postamat_id = "map-7"
+        client = RecordingClient()
+        state.client = client
+
+        self.assertTrue(state.command("cell_report"))
+        self.assertEqual("map-7", client.messages[0]["postamatId"])
+
+
+class DashboardTests(unittest.TestCase):
+    def test_event_separator_is_a_valid_javascript_escape(self):
+        self.assertIn(r".join('\n')", dashboard_html())
 
 
 if __name__ == "__main__":

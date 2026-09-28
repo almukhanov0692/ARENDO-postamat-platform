@@ -185,6 +185,7 @@ class PostamatState:
         command = {
             "type": "command",
             "id": f"local-{uuid.uuid4().hex[:12]}",
+            "postamatId": self.postamat_id,
             "kind": kind,
             "payload": {"cellCode": code} if code else {},
             "expiresAt": command_expiry(),
@@ -474,7 +475,7 @@ def dashboard_html() -> str:
 <main><h1>ARENDO · local bridge</h1><p id="status">Загрузка…</p><div id="buttons"></div><h2>Состояние</h2><pre id="state"></pre><h2>События</h2><pre id="events"></pre></main>
 <script>
 async function api(url, options){const r=await fetch(url, options); return await r.json()}
-async function refresh(){const s=await api('/api/state'); document.querySelector('#status').innerHTML=s.connected?'<span class="ok">Android подключён</span>':'<span class="bad">Android не подключён</span>'; document.querySelector('#state').textContent=JSON.stringify({postamatId:s.postamatId,appVersion:s.appVersion,lastSeen:s.lastSeen,cells:s.cells},null,2); document.querySelector('#events').textContent=s.events.map(x=>x.at+' · '+x.message).join('\n');}
+async function refresh(){const s=await api('/api/state'); document.querySelector('#status').innerHTML=s.connected?'<span class="ok">Android подключён</span>':'<span class="bad">Android не подключён</span>'; document.querySelector('#state').textContent=JSON.stringify({postamatId:s.postamatId,appVersion:s.appVersion,lastSeen:s.lastSeen,cells:s.cells},null,2); document.querySelector('#events').textContent=s.events.map(x=>x.at+' · '+x.message).join('\\n');}
 document.querySelector('#buttons').innerHTML=Array.from({length:10},(_,i)=>String(i+1).padStart(2,'0')).map(c=>`<button onclick="openCell('${c}')">Открыть D${Number(c)}</button>`).join('')+'<button onclick="report()">Запросить статусы</button>';
 async function openCell(c){await api('/api/command/open?cell='+c); await refresh()} async function report(){await api('/api/command/report'); await refresh()} refresh(); setInterval(refresh,2000);
 </script></html>"""
