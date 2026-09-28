@@ -2,6 +2,9 @@ plugins {
     id("com.android.application")
 }
 
+fun buildConfigString(value: String): String =
+    "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+
 android {
     namespace = "kz.arendo.device"
     compileSdk = 35
@@ -14,10 +17,23 @@ android {
         applicationId = "kz.arendo.device"
         minSdk = 21
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 3
+        versionName = "0.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        getByName("debug") {
+            buildConfigField("String", "LOCAL_DEMO_WS_URL", buildConfigString(
+                System.getenv("ARENDO_LOCAL_WS_URL") ?: ""))
+            buildConfigField("String", "LOCAL_DEMO_WS_TOKEN", buildConfigString(
+                System.getenv("ARENDO_LOCAL_WS_TOKEN") ?: ""))
+        }
+        getByName("release") {
+            buildConfigField("String", "LOCAL_DEMO_WS_URL", "\"\"")
+            buildConfigField("String", "LOCAL_DEMO_WS_TOKEN", "\"\"")
+        }
     }
 
     compileOptions {

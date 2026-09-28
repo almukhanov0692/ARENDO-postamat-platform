@@ -37,11 +37,11 @@ The technician application is a local service tool. In version 1, state-changing
 
 ## Validated MVP slice
 
-1. Buildable Android postamat gateway installed on the RK3568 test unit.
+1. Buildable Android postamat gateway installed on the INBOX710 (RK3399) laboratory unit.
 2. USB/RS-485 discovery and permission handling.
 3. Logical-cell I/O routing in the device gateway, with unit-tested module addressing.
-4. Door-state simulation: LED/output ON is treated as `open`; the corresponding button/input
-   transition is treated as `closed`.
+4. Demonstration door feedback for D01-D04 comes from X-input transitions, not relay output state.
+   D05-D10 have no connected feedback and report `unknown`.
 5. Versioned backend WebSocket contract and acceptance-test traceability.
 
 The Android source includes the WebSocket device client and a temporary laptop bridge for integration
@@ -62,7 +62,8 @@ From `device-android/`:
 .\gradlew.bat assembleDebug
 ```
 
-The current source supports API 21 and newer. The connected RK3568 test unit reports API 25.
+The current source supports API 21 and newer. The connected INBOX710 laboratory unit reports API 25;
+the proposed RK3568 production controller has not been commissioned here.
 The final supported-device matrix remains an acceptance item.
 
 ## Security

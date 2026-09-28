@@ -1,6 +1,6 @@
 # ARENDO Device Android
 
-Android gateway installed on the RK3568 postamat controller.
+Android gateway tested on the INBOX710 (RK3399) laboratory unit; RK3568 is the proposed production controller.
 
 ## Implemented in the foundation build
 
@@ -11,8 +11,8 @@ Android gateway installed on the RK3568 postamat controller.
 - unit-tested gateway API for `0x01` output-state readback, kept separate from physical door status;
 - validated logical-cell map that routes I/O by module slave ID and local point address;
 - CRC, response slave-ID/function, length and write-echo validation;
-- transition-only close handling for the ten-channel exhibition profile;
-- debug-build WebSocket client with device-token header, `hello`/`welcome`, heartbeat, reconnect,
+- transition-only X-input door feedback for D01-D04; 2-second output pulse with automatic OFF;
+- WebSocket client with device-token header, `hello`/`welcome`, heartbeat, reconnect,
   addressed `open_cell`, acknowledgements and demo door events;
 - persistent command-ID deduplication ledger to prevent replaying an already-seen open command;
 - simple local diagnostic screen;
@@ -37,8 +37,9 @@ physical output paths and the provisional D01-D04 feedback assignment still need
 verification.
 Do not treat the 10-channel exhibit as the TЗ's 14-real-door acceptance test or 28-door target.
 
-The WebSocket client is in the current Android source and debug APK, but a live phone-to-Modbus-to-
-server acceptance run is still required. The local laptop bridge is in `../../local-server/`.
+The current debug APK was installed on INBOX710 and exchanged `hello`, heartbeat and `cell_report`
+ACK with the laptop bridge. Demonstration X-input changes reached the APK and monitor; a complete
+real-lock and door-sensor acceptance run is still required. The local laptop bridge is in `../../local-server/`.
 For Wi-Fi on one LAN, use `ws://<laptop-ip>:8765/v1/device/socket` in the debug build. For ngrok,
 use `wss://<assigned-domain>/v1/device/socket`. The bridge requires a token and keeps its admin UI
 on the laptop only. Do not expose port 8766.
@@ -48,7 +49,8 @@ token rotation/revocation and production server authorization remain future work
 currently generated in memory and are not persisted for offline replay. See
 `../docs/protocols/backend-v1.md`.
 
-The foundation build supports Android API 21 and newer; the connected RK3568 test unit reports API 25.
+The foundation build supports Android API 21 and newer; the connected INBOX710 (RK3399) laboratory
+unit reports API 25. The proposed RK3568 production controller requires separate acceptance.
 
 ## Build
 

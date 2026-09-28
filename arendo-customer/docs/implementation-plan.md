@@ -45,12 +45,14 @@ gates explicit. A prototype or simulator result is not a production acceptance r
 
 ## Current position
 
-Stage 0 is in progress. The repository contains a buildable RK3568 Android gateway, a ten-channel
+Stage 0 is in progress. The repository contains a buildable Android gateway tested on INBOX710
+(RK3399), a ten-channel
 exhibition profile, a WebSocket device client and the temporary laptop bridge. The current
 button/LED feedback is explicitly simulated; physical lock and door-sensor acceptance remains open.
-The APK implements `hello`, heartbeat, `open_cell`, `cell_report`, ACK and demo door events. Backend
-storage, UI, server-side offline detection and production credentials/signatures still need to be
-completed against [`protocols/backend-v1.md`](protocols/backend-v1.md) and the backend handoff.
+The APK implements `hello`, heartbeat, `open_cell` (2-second output pulse with automatic OFF),
+`cell_report`, ACK and demo X-input door events. Backend storage, UI, server-side offline detection
+and production credentials/signatures still need to be completed against
+[`protocols/backend-v1.md`](protocols/backend-v1.md) and the backend handoff.
 Durable event replay, technician grant/block flow, update/rollback, GPS, advertising/audio and full
 product acceptance have not been demonstrated.
 

@@ -31,8 +31,8 @@ Sent once after each connection.
   "type": "hello",
   "protocolVersion": 1,
   "postamatId": "map-7",
-  "appVersion": "0.1.0",
-  "capabilities": ["locks", "buttons", "indicators", "demo_buttons_as_doors"],
+  "appVersion": "0.2.1",
+  "capabilities": ["locks", "buttons", "indicators", "demo_buttons_as_doors", "relay_pulse_2s"],
   "cells": [
     {"code": "01", "door": "unknown", "lock": "unknown"}
   ],
@@ -103,14 +103,18 @@ drafts (`door_not_closed`, `cell_blocked`, `cell_unblocked`, etc.) are not curre
 }
 ```
 
+`postamatId` is the stable business identity of the postamat. The current `map-7` value is only a
+temporary demo ID; it is not a product category, cabinet number or Modbus slave address. Replace it
+with the ID assigned by the backend before production.
+
 Commands accepted by the current APK:
 
 | Command | Required payload | Device behavior |
 |---|---|---|
-| `open_cell` | `cellCode` | Validate postamat, expiry and cell; activate the mapped output and return an acknowledgement. |
+| `open_cell` | `cellCode` | Validate postamat, expiry and cell; pulse the mapped lock output for 2 seconds, then switch it OFF and acknowledge command acceptance. This does not prove the door opened. |
 | `cell_report` | none | Send a heartbeat snapshot and acknowledge the report request. |
 
-`confirm_closed`, `block_cell` and `unblock_cell` are **not implemented** by the current APK. Do not
+`close_cell`, `confirm_closed`, `block_cell` and `unblock_cell` are **not implemented** by the current APK. Do not
 send them until device-side support and the associated authorization/state rules have been agreed.
 
 ### Acknowledgement
@@ -125,8 +129,8 @@ send them until device-side support and the associated authorization/state rules
 ```
 
 Current error codes: `invalid_command_id`, `wrong_postamat`, `expired`, `invalid_cell`,
-`unsupported_command`, `modbus_offline`, `internal_error`. A repeated `open_cell` command ID returns
-`ok: true` with result kind `duplicate_ignored`; this means “not executed again”, not “door opened”.
+`unsupported_command`, `modbus_offline`, `internal_error`. A repeated state-changing command ID returns
+`ok: true` with result kind `duplicate_ignored`; this means “not executed again”, not “door opened/closed”.
 `blocked` and `door_not_closed` are future outcomes, not current device behavior.
 
 ## Safety and reconnect rules
@@ -160,11 +164,13 @@ The backend displays the reported state for each logical `cellCode`, for example
 | `closed` | Door-closed feedback was reported for this cell. |
 | `unknown` | No reliable door feedback is available. |
 
-An `open_cell` acknowledgement means that the device accepted the command; it is not proof that the
-door physically opened. The backend must wait for a `door_opened` event or a subsequent reported
-`door: "open"` state. Demo/simulated feedback must be marked as such and must not be presented as a
-verified physical sensor reading. The backend contract never includes USB, RS-485, Modbus addresses
-or controller terminal labels; those are local device-gateway configuration.
+An `open_cell` acknowledgement means that the device accepted the command and started the output
+pulse; it is not proof that the door physically opened. The output turns OFF automatically after
+two seconds, but that does not mean a person physically closed the door. The backend
+must wait for a `door_opened` / `door_closed` event or a subsequent reported door state from feedback.
+Demo/simulated feedback must be marked as such and must not be presented as a verified physical
+sensor reading. The backend contract never includes USB, RS-485, Modbus addresses or controller
+terminal labels; those are local device-gateway configuration.
 
 ### Feedback timeout after opening
 

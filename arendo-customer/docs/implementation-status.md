@@ -18,7 +18,8 @@ specification; they are not replaced with locally invented test numbering.
 - The source is separated into the Android device gateway, controller notes, versioned protocols,
   decisions and acceptance tests.
 - The Android project builds reproducibly from `arendo-customer/device-android/`.
-- A debug APK was installed on the RK3568 Android test unit running API 25.
+- Debug APK `0.2.1` was installed on the INBOX710 (RK3399) Android laboratory unit running API 25.
+  The proposed RK3568 production unit requires separate commissioning.
 
 ### Hardware stand
 
@@ -31,16 +32,20 @@ specification; they are not replaced with locally invented test numbering.
 - Modbus frame/response validation and serialized background I/O are implemented. Detailed
   controller mapping remains a device-side commissioning item, separate from the backend contract.
 
-### Four-button demonstration behavior
+### Ten-output / four-input demonstration behavior
 
-- LED/output ON is the simulator's `open` indication; pressing the corresponding button changes the
-  simulated state to `closed` and switches the output off.
+- An `open_cell` command pulses one output for 2 seconds, then automatically switches it OFF. Output
+  state is not treated as door position. Available X-input feedback determines `open`/`closed` for
+  D01-D04; D05-D10 remain `unknown` without feedback.
+- On the current wiring, active X is interpreted as `closed`, inactive X as `open`. Applying +12 V to
+  X1-X4 was observed to update both the APK and local monitor. This proves the demo input path, not
+  the polarity or semantics of the ordered lock's feedback pair. An open circuit can also result
+  from a broken wire, so it must not be treated as a verified physical opening.
 - The stand is a simulator. It does not prove a production lock sensor or a real door sensor.
 - The customer has approved 10 relay channels for the interim exhibition build, according to
   Nursultan. The canonical Android app is configured for ten outputs and four input-feedback points;
-  physical output behavior and the final feedback assignment still need verification. This demo
-  does not meet T01's
-  14-real-door requirement or replace the 28-door product target.
+  real-lock behavior and final feedback assignment still need verification. This demo does not meet
+  T01's 14-real-door requirement or replace the 28-door product target.
 - The 28-cell product configuration is not yet commissioned on physical equipment. The current
   simulator and software tests do not prove the final controller layout or door feedback.
 
@@ -49,12 +54,18 @@ specification; they are not replaced with locally invented test numbering.
 The current Android source includes the device-side WebSocket client and the local laptop bridge:
 
 - The app sends the device token in `X-Device-Token`; the token is not logged or saved with URL settings.
-- `hello`/`welcome`, heartbeat, `open_cell`, `cell_report`, acknowledgements and demo door events are implemented.
+- `hello`/`welcome`, heartbeat, `open_cell`, `cell_report`, acknowledgements and demo X-input door events are implemented in the Android source.
+- `open_cell` energizes one mapped output for 2 seconds, then switches it OFF. The ACK is not a physical door-state confirmation. There is no remote close command; a person closes the door physically.
+- Door state is derived from the available feedback inputs; the current button-as-door inputs remain simulated. D05-D10 have no feedback input and stay `unknown`.
+- The temporary laptop dashboard has per-cell opening, sequential open-all and status-report actions. It does not expose a close command.
+- `map-7` is the current temporary demo `postamatId`, not a category, cabinet number, or Modbus address; backend must provide the production identity.
+- Updated safe-pulse APK is version `0.2.1`; the local dashboard blocks relay commands from older APKs that do not advertise `relay_pulse_2s`.
 - Reconnect uses bounded backoff. Processed command IDs are persisted locally to prevent repeating an open operation.
 - The temporary bridge requires a matching token. Its command/dashboard API binds to laptop loopback; only the WebSocket port is intended for LAN/ngrok testing.
-- Android unit tests and debug APK build pass. The demonstration log showed WebSocket registration
-  and heartbeats; Modbus read timeouts remain in the log, so complete physical I/O-to-backend
-  acceptance is still outstanding.
+- Android unit tests and debug APK build pass. The connected APK registered through WebSocket and
+  returned heartbeat/ACK for `cell_report`; applying +12 V to X1-X4 was observed to update the APK
+  and local monitor. This is not acceptance of the ordered lock's feedback contact or the full
+  physical I/O-to-backend chain.
 
 The canonical message contract is documented in [`protocols/backend-v1.md`](protocols/backend-v1.md).
 The laptop bridge remains an in-memory development tool, not Sarvar's production server.
@@ -97,7 +108,7 @@ Minimum server behavior:
 
 - authenticate the device and accept one `hello` per connection;
 - send `welcome` with heartbeat/ping timing;
-- route `open_cell` only to the matching `postamatId` and `cellCode`;
+- route `open_cell` only to the matching `postamatId` and `cellCode`; treat ACK separately from sensor-confirmed door state;
 - persist and deduplicate command results;
 - display `D1 open` / `D1 closed` (and the same format for each configured cell) from device
   events/heartbeats; show `unknown` when feedback is unavailable;

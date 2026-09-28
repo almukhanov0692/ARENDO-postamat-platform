@@ -60,12 +60,14 @@ public final class MainActivity extends Activity {
     private static final ModbusCellMap CELL_MAP = ModbusCellMap.exhibition10();
     private static final int CELL_COUNT = CELL_MAP.getCells().size();
     private static final int BAUD_RATE = 9600;
+    private static final long OUTPUT_PULSE_MILLIS = 2_000L;
 
     private final ScheduledExecutorService io = Executors.newSingleThreadScheduledExecutor();
     private final ScheduledExecutorService backendTimer = Executors.newSingleThreadScheduledExecutor();
     private final boolean[] previousInputs = new boolean[CELL_COUNT];
     private final boolean[] outputActive = new boolean[CELL_COUNT];
     private final String[] doorStates = new String[CELL_COUNT];
+    private final ScheduledFuture<?>[] outputPulseOffTasks = new ScheduledFuture<?>[CELL_COUNT];
     private final TextView[] cellStates = new TextView[CELL_COUNT];
     private final Button[] cellButtons = new Button[CELL_COUNT];
 
@@ -190,9 +192,20 @@ public final class MainActivity extends Activity {
         postamatIdInput = editField("ID постамата", backendPreferences.getString("postamatId",
                 "map-7"), InputType.TYPE_CLASS_TEXT);
         backendCard.addView(postamatIdInput, matchWrap(4));
-        deviceTokenInput = editField("Токен устройства (для локального сервера можно пусто)", "",
+        deviceTokenInput = editField("Токен устройства", "",
                 InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         backendCard.addView(deviceTokenInput, matchWrap(4));
+        if (BuildConfig.DEBUG && !BuildConfig.LOCAL_DEMO_WS_URL.isEmpty()
+                && !BuildConfig.LOCAL_DEMO_WS_TOKEN.isEmpty()) {
+            Button localDemoConnect = button("Подключить к локальному стенду", false);
+            localDemoConnect.setOnClickListener(view -> {
+                backendUrlInput.setText(BuildConfig.LOCAL_DEMO_WS_URL);
+                postamatIdInput.setText("map-7");
+                deviceTokenInput.setText(BuildConfig.LOCAL_DEMO_WS_TOKEN);
+                connectBackendFromForm();
+            });
+            backendCard.addView(localDemoConnect, matchWrap(6));
+        }
         Button backendConnect = button("Подключить Backend WebSocket", true);
         backendConnect.setOnClickListener(view -> connectBackendFromForm());
         backendCard.addView(backendConnect, matchWrap(6));
@@ -214,9 +227,7 @@ public final class MainActivity extends Activity {
             card.addView(cellTitle);
             cellStates[index] = label("Состояние: неизвестно", 14, Color.rgb(100, 116, 139));
             card.addView(cellStates[index]);
-            String action = mapping.hasDoorInput()
-                    ? "Тест: включить Y" : "Тест реле Y";
-            cellButtons[index] = button(action + mapping.getOutputChannel(), false);
+            cellButtons[index] = button("Тест: импульс Y" + mapping.getOutputChannel() + " · 2 с", false);
             cellButtons[index].setEnabled(false);
             cellButtons[index].setOnClickListener(view -> toggleOutput(cell));
             card.addView(cellButtons[index], matchWrap(4));
@@ -270,8 +281,8 @@ public final class MainActivity extends Activity {
                         false);
                 return;
             }
-            if ("wss".equalsIgnoreCase(scheme) && token.isEmpty()) {
-                setBackendStatus("Для wss:// введи токен устройства", false);
+            if (token.isEmpty()) {
+                setBackendStatus("Введи токен устройства или используй локальный стенд", false);
                 return;
             }
             backendRequested = false;
@@ -394,6 +405,7 @@ public final class MainActivity extends Activity {
             capabilities.put("buttons");
             capabilities.put("indicators");
             capabilities.put("demo_buttons_as_doors");
+            capabilities.put("relay_pulse_2s");
             hello.put("type", "hello");
             hello.put("protocolVersion", 1);
             hello.put("postamatId", activePostamatId);
@@ -525,23 +537,57 @@ public final class MainActivity extends Activity {
             return;
         }
         try {
-            if (!outputActive[index]) {
-                gateway.writeCellOutput(index, true);
-                outputActive[index] = true;
-            }
-            ModbusCellMap.Cell cell = CELL_MAP.getCell(index);
-            if (cell.hasDoorInput()) {
-                doorStates[index] = "open";
-                final int cellIndex = index;
-                runOnUiThread(() -> updateCell(cellIndex, "open"));
-                sendDoorEvent(index, "door_opened", "demo_relay");
-            }
+            cancelOutputPulse(index);
+            outputActive[index] = true;
+            scheduleOutputPulseOff(index, gateway);
+            gateway.writeCellOutput(index, true);
+            cancelOutputPulse(index);
+            scheduleOutputPulseOff(index, gateway);
+            final int cellIndex = index;
+            runOnUiThread(() -> {
+                updateCell(cellIndex, doorStates[cellIndex]);
+                appendLog("Команда open_cell D" + code + " · импульс Y"
+                        + CELL_MAP.getCell(cellIndex).getOutputChannel() + " на 2 секунды; ждём X");
+            });
             sendCommandAck(commandId, true, "open_command_accepted", code);
-            appendLogOnUi("Команда open_cell D" + code + " выполнена через Modbus");
         } catch (Exception error) {
             sendCommandAck(commandId, false, "internal_error", code);
             appendLogOnUi("Ошибка команды D" + code + ": Modbus не выполнил запись");
         }
+    }
+
+    private void cancelOutputPulse(int index) {
+        ScheduledFuture<?> task = outputPulseOffTasks[index];
+        if (task != null) {
+            task.cancel(false);
+            outputPulseOffTasks[index] = null;
+        }
+    }
+
+    private void scheduleOutputPulseOff(int index, ModbusIoGateway gateway) {
+        outputPulseOffTasks[index] = io.schedule(() -> {
+            try {
+                if (!outputActive[index]) {
+                    return;
+                }
+                ModbusIoGateway activeGateway = ioGateway == null ? gateway : ioGateway;
+                activeGateway.writeCellOutput(index, false);
+                outputActive[index] = false;
+                outputPulseOffTasks[index] = null;
+                runOnUiThread(() -> {
+                    updateCell(index, doorStates[index]);
+                    appendLog("Импульс завершён: Y" + CELL_MAP.getCell(index).getOutputChannel()
+                            + " OFF · D" + CELL_MAP.getCell(index).getCode());
+                });
+                sendHeartbeat();
+            } catch (Exception error) {
+                modbusOnline = false;
+                outputPulseOffTasks[index] = null;
+                runOnUiThread(() -> appendLog("Ошибка отключения реле Y"
+                        + CELL_MAP.getCell(index).getOutputChannel() + ": " + safeMessage(error)));
+                sendHeartbeat();
+            }
+        }, OUTPUT_PULSE_MILLIS, TimeUnit.MILLISECONDS);
     }
 
     private int findCellIndex(String code) {
@@ -739,21 +785,28 @@ public final class MainActivity extends Activity {
             try {
                 boolean[] inputs = gateway.readCellInputs();
                 modbusOnline = true;
+                boolean firstSample = !inputsInitialized;
                 for (int index = 0; index < CELL_COUNT; index++) {
                     if (!CELL_MAP.getCell(index).hasDoorInput()) {
                         continue;
                     }
                     boolean activated = inputs[index];
-                    if (inputsInitialized && activated && !previousInputs[index]) {
-                        gateway.writeCellOutput(index, false);
-                        outputActive[index] = false;
-                        doorStates[index] = "closed";
+                    String nextState = activated ? "closed" : "open";
+                    if (firstSample) {
+                        doorStates[index] = nextState;
                         final int cell = index;
+                        runOnUiThread(() -> updateCell(cell, nextState));
+                    } else if (activated != previousInputs[index]) {
+                        doorStates[index] = nextState;
+                        final int cell = index;
+                        String eventKind = activated ? "door_closed" : "door_opened";
                         runOnUiThread(() -> {
-                            updateCell(cell, "closed");
-                            appendLog("D" + CELL_MAP.getCell(cell).getCode() + " closed");
+                            updateCell(cell, nextState);
+                            appendLog("D" + CELL_MAP.getCell(cell).getCode()
+                                    + " " + nextState + " · подтверждено входом X"
+                                    + CELL_MAP.getCell(cell).getInputChannel());
                         });
-                        sendDoorEvent(index, "door_closed", "demo_button");
+                        sendDoorEvent(index, eventKind, "demo_modbus_x");
                     }
                     previousInputs[index] = activated;
                 }
@@ -769,31 +822,24 @@ public final class MainActivity extends Activity {
     }
 
     private void toggleOutput(int index) {
-        boolean next = !outputActive[index];
         io.execute(() -> {
             try {
                 ModbusIoGateway gateway = ioGateway;
                 if (gateway == null) {
                     throw new IOException("Modbus не подключён");
                 }
-                gateway.writeCellOutput(index, next);
-                outputActive[index] = next;
+                cancelOutputPulse(index);
+                outputActive[index] = true;
+                scheduleOutputPulseOff(index, gateway);
+                gateway.writeCellOutput(index, true);
+                cancelOutputPulse(index);
+                scheduleOutputPulseOff(index, gateway);
                 ModbusCellMap.Cell mapping = CELL_MAP.getCell(index);
-                String state = mapping.hasDoorInput()
-                        ? (next ? "open" : "closed") : "unknown";
-                doorStates[index] = state;
                 runOnUiThread(() -> {
-                    updateCell(index, state);
-                    appendLog("D" + CELL_MAP.getCell(index).getCode()
-                            + (mapping.hasDoorInput()
-                                    ? (next ? " open (demo)" : " closed (demo)")
-                                    : " output Y" + mapping.getOutputChannel()
-                                            + (next ? " ON; door unknown" : " OFF; door unknown")));
+                    updateCell(index, doorStates[index]);
+                    appendLog("Тестовый импульс Y" + mapping.getOutputChannel()
+                            + " · 2 секунды; дверца — только по X-входу");
                 });
-                if (mapping.hasDoorInput()) {
-                    sendDoorEvent(index, next ? "door_opened" : "door_closed",
-                            "demo_local_toggle");
-                }
             } catch (Exception error) {
                 int channel = CELL_MAP.getCell(index).getOutputChannel();
                 runOnUiThread(() -> appendLog("Y" + channel + ": "
@@ -811,8 +857,7 @@ public final class MainActivity extends Activity {
         String relay = outputActive[index] ? "ON" : "OFF";
         cellStates[index].setText("Дверь: " + state + " · " + detail + " · реле " + relay);
         cellStates[index].setTextColor(open ? Color.rgb(22, 163, 74) : Color.rgb(71, 85, 105));
-        cellButtons[index].setText((outputActive[index] ? "Выключить Y" : "Тест: включить Y")
-                + mapping.getOutputChannel());
+        cellButtons[index].setText("Тест: импульс Y" + mapping.getOutputChannel() + " · 2 с");
     }
 
     private void setUsbStatus(String value, boolean online) {

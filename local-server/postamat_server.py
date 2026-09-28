@@ -57,6 +57,7 @@ class PostamatState:
         self.postamat_id = "map-7"
         self.postamat_name = "Локальный постамат"
         self.app_version = "—"
+        self.capabilities: list[str] = []
         self.last_seen = None
         self.last_hello = None
         self.last_heartbeat = None
@@ -111,6 +112,9 @@ class PostamatState:
             with self.lock:
                 self.postamat_id = message.get("postamatId") or "map-7"
                 self.app_version = message.get("appVersion") or "—"
+                capabilities = message.get("capabilities")
+                self.capabilities = [item for item in capabilities if isinstance(item, str)] \
+                    if isinstance(capabilities, list) else []
                 self.last_hello = now_iso()
                 self._merge_cells(message.get("cells"))
                 welcome_cells = [dict(self.cells[code]) for code in CELL_CODES]
@@ -200,6 +204,9 @@ class PostamatState:
                 "postamatId": self.postamat_id,
                 "postamatName": self.postamat_name,
                 "appVersion": self.app_version,
+                "capabilities": list(self.capabilities),
+                "safeRelayCommands": self.client is not None
+                    and "relay_pulse_2s" in self.capabilities,
                 "lastSeen": self.last_seen,
                 "lastHello": self.last_hello,
                 "lastHeartbeat": self.last_heartbeat,
@@ -396,7 +403,7 @@ class AdminHandler(BaseHTTPRequestHandler):
                 return
             kind = body.get("kind", "")
             code = body.get("cellCode", body.get("cell", ""))
-            if kind not in {"open_cell", "confirm_closed", "cell_report"}:
+            if kind not in {"open_cell", "cell_report"}:
                 send_http_json(self, HTTPStatus.BAD_REQUEST, {"error": "unsupported command"})
                 return
             self._send_command(kind, code)
@@ -404,6 +411,26 @@ class AdminHandler(BaseHTTPRequestHandler):
         send_http_json(self, HTTPStatus.NOT_FOUND, {"error": "not found"})
 
     def _send_command(self, kind: str, code: str | None):
+        if kind == "open_cell":
+            normalized = self.state._normalise_cell(code)
+            if normalized is None:
+                send_http_json(
+                    self,
+                    HTTPStatus.BAD_REQUEST,
+                    {"sent": False, "error": "invalid_cell", "cellCode": code},
+                )
+                return
+            code = normalized
+            with self.state.lock:
+                compatible = self.state.client is not None and "relay_pulse_2s" in self.state.capabilities
+            if not compatible:
+                self.state.log("Команда реле заблокирована: устройство не объявило safe relay pulse v1")
+                send_http_json(
+                    self,
+                    HTTPStatus.CONFLICT,
+                    {"sent": False, "error": "device_update_required", "cellCode": code},
+                )
+                return
         sent = self.state.command(kind, code)
         send_http_json(
             self,
@@ -471,13 +498,35 @@ def send_http_json(target, status: HTTPStatus, payload: dict):
 def dashboard_html() -> str:
     return """<!doctype html>
 <html lang="ru"><meta charset="utf-8"><title>ARENDO local bridge</title>
-<style>body{font:16px system-ui;background:#0b1118;color:#e8edf4;max-width:900px;margin:32px auto;padding:0 18px}main{background:#111a25;border:1px solid #2a3a4e;border-radius:16px;padding:22px}button{margin:4px;padding:10px 16px;border:1px solid #2d78e8;border-radius:9px;background:#17263a;color:#e8edf4;cursor:pointer}pre{white-space:pre-wrap;background:#080d13;padding:14px;border-radius:10px;max-height:480px;overflow:auto}.ok{color:#39d39a}.bad{color:#ff6677}</style>
-<main><h1>ARENDO · local bridge</h1><p id="status">Загрузка…</p><div id="buttons"></div><h2>Состояние</h2><pre id="state"></pre><h2>События</h2><pre id="events"></pre></main>
+<style>
+body{font:16px system-ui;background:#0b1118;color:#e8edf4;max-width:1000px;margin:28px auto;padding:0 18px}
+main{background:#111a25;border:1px solid #2a3a4e;border-radius:16px;padding:22px}
+button{margin:4px;padding:10px 16px;border:1px solid #2d78e8;border-radius:9px;background:#17263a;color:#e8edf4;cursor:pointer}
+button:disabled{opacity:.55;cursor:wait}.muted{color:#a8b4c4}
+.bulk,.cells{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.cell{background:#0c1420;border:1px solid #2a3a4e;border-radius:12px;padding:10px;min-width:170px}
+pre{white-space:pre-wrap;background:#080d13;padding:14px;border-radius:10px;max-height:480px;overflow:auto}.ok{color:#39d39a}.bad{color:#ff6677}
+</style>
+<main><h1>ARENDO · локальный стенд</h1><p id="status">Загрузка…</p>
+<p id="identity" class="muted"></p>
+<p class="muted">Открытие — импульс реле на 2 секунды, затем выход автоматически выключается. Дверца закрывается физически; статус open/closed определяется только обратным сигналом X, иначе остаётся unknown.</p>
+<h2>Управление ячейками</h2><div id="bulk" class="bulk"></div><p id="actionStatus" class="muted"></p><div id="buttons" class="cells"></div>
+<button id="report">Запросить статусы</button><h2>Состояние</h2><pre id="state"></pre><h2>События</h2><pre id="events"></pre></main>
 <script>
-async function api(url, options){const r=await fetch(url, options); return await r.json()}
-async function refresh(){const s=await api('/api/state'); document.querySelector('#status').innerHTML=s.connected?'<span class="ok">Android подключён</span>':'<span class="bad">Android не подключён</span>'; document.querySelector('#state').textContent=JSON.stringify({postamatId:s.postamatId,appVersion:s.appVersion,lastSeen:s.lastSeen,cells:s.cells},null,2); document.querySelector('#events').textContent=s.events.map(x=>x.at+' · '+x.message).join('\\n');}
-document.querySelector('#buttons').innerHTML=Array.from({length:10},(_,i)=>String(i+1).padStart(2,'0')).map(c=>`<button onclick="openCell('${c}')">Открыть D${Number(c)}</button>`).join('')+'<button onclick="report()">Запросить статусы</button>';
-async function openCell(c){await api('/api/command/open?cell='+c); await refresh()} async function report(){await api('/api/command/report'); await refresh()} refresh(); setInterval(refresh,2000);
+async function api(url, options){const r=await fetch(url, options);const data=await r.json();if(!r.ok||data.sent===false)throw new Error(data.error||'Команда не отправлена');return data}
+let controlsReady=false, actionsBusy=false;
+function setBusy(busy){actionsBusy=busy;document.querySelectorAll('#bulk button,#buttons button').forEach(button=>button.disabled=busy||!controlsReady);document.querySelector('#report').disabled=busy}
+async function refresh(){const s=await api('/api/state');document.querySelector('#status').innerHTML=s.connected?'<span class="ok">Android подключён</span>':'<span class="bad">Android не подключён</span>';const id=s.postamatId||'не задан';const hint=id==='map-7'?' · временный тестовый ID, не категория и не адрес Modbus':'';document.querySelector('#identity').textContent='Постамат: '+(s.postamatName||'без названия')+' · ID: '+id+hint+' · APK '+(s.appVersion||'—');document.querySelector('#state').textContent=JSON.stringify({postamatId:s.postamatId,appVersion:s.appVersion,capabilities:s.capabilities,lastSeen:s.lastSeen,cells:s.cells},null,2);document.querySelector('#events').textContent=s.events.map(x=>x.at+' · '+x.message).join('\\n');controlsReady=s.safeRelayCommands===true;setBusy(actionsBusy);if(!controlsReady)document.querySelector('#actionStatus').textContent=s.connected?'Открытие заблокировано: установите APK с поддержкой двухсекундного импульса.':'Команды реле недоступны: Android не подключён.'}
+const cells=Array.from({length:10},(_,i)=>String(i+1).padStart(2,'0'));
+const bulk=document.querySelector('#bulk');
+bulk.innerHTML='<button id="openAll">Открыть все D1–D10 · по очереди, 2 с</button>';
+const buttons=document.querySelector('#buttons');
+buttons.innerHTML=cells.map(c=>'<section class="cell"><strong>D'+Number(c)+'</strong><div><button data-cell="'+c+'">Открыть D'+Number(c)+'</button></div></section>').join('');
+function pause(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
+async function openAll(){if(!window.confirm('Открыть все 10 ячеек? Каждое реле получит импульс 2 секунды по очереди; проверьте, что это безопасно.'))return;setBusy(true);try{for(let i=0;i<cells.length;i++){document.querySelector('#actionStatus').textContent='Открытие: D'+Number(cells[i])+' ('+(i+1)+'/10)';await api('/api/command/open?cell='+cells[i]);if(i<cells.length-1)await pause(2200)}document.querySelector('#actionStatus').textContent='Команды открытия отправлены по очереди. Ждём обратную связь X.'}catch(error){document.querySelector('#actionStatus').textContent='Ошибка: '+error.message}finally{setBusy(false);await refresh()}}
+bulk.querySelector('#openAll').addEventListener('click',openAll);
+buttons.addEventListener('click',async event=>{const button=event.target.closest('button[data-cell]');if(!button)return;const cell=button.dataset.cell;if(!window.confirm('Подать на D'+Number(cell)+' импульс реле на 2 секунды?'))return;button.disabled=true;try{await api('/api/command/open?cell='+cell);document.querySelector('#actionStatus').textContent='Команда открытия отправлена для D'+Number(cell)}catch(error){document.querySelector('#actionStatus').textContent='Ошибка: '+error.message}finally{button.disabled=false;await refresh()}});
+document.querySelector('#report').addEventListener('click',async()=>{try{await api('/api/command/report');document.querySelector('#actionStatus').textContent='Запрос статусов отправлен'}catch(error){document.querySelector('#actionStatus').textContent='Ошибка: '+error.message}await refresh()});
+refresh();setInterval(refresh,2000);
 </script></html>"""
 
 

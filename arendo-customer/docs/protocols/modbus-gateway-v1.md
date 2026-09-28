@@ -92,9 +92,12 @@ assume logical cell numbering or cabinet wiring until the commissioned map is ap
 
 ## Current stand interpretation
 
-- Output/LED ON represents `door=open` for demonstration.
-- Physical button activation represents the return/close action.
-- After the configured close transition, the corresponding output is switched OFF and the gateway reports `door_closed`.
+- `open_cell` switches the mapped output ON for 2 seconds, then OFF automatically. Output/LED state
+  does not determine `door` state.
+- For D01-D04, active X-input is currently interpreted as `closed` and inactive X as `open`;
+  transitions produce demo door events marked `simulated:true`. D05-D10 remain `unknown`.
+- Door closure is a physical action, not a remote output-OFF command. An open or broken feedback
+  wire may look inactive, so this provisional polarity cannot prove physical opening.
 - Production door sensors replace this simulation without changing the logical backend contract.
   Their contact type, normal state, wire-break behavior and diagnostic coverage must be confirmed
   from the selected sensor/module datasheets and physical tests. Until then, unknown/fault must not

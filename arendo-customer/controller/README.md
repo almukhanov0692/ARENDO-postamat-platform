@@ -1,6 +1,6 @@
 # Postamat controller
 
-The current controller runtime is an Android gateway on RK3568 and is implemented in `../device-android/`. It connects to the I/O module through a USB-RS485 converter using Modbus RTU.
+The current controller runtime is an Android gateway tested on INBOX710 (RK3399) and implemented in `../device-android/`. The proposed production controller is RK3568 and requires separate commissioning. The gateway connects to the I/O module through a USB-RS485 converter using Modbus RTU.
 
 This directory is reserved for hardware notes and possible native/background services introduced after the Android image, production module models and update/rollback mechanism are confirmed.
 
