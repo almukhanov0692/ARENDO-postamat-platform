@@ -1,7 +1,8 @@
 # ARENDO postamat platform
 
-Customer and backend-developer project area for the ARENDO postamat platform. The GitHub repository
-is private; grant access only to project collaborators who need the source.
+Customer and backend-developer project area for the ARENDO postamat platform. The repository is
+prepared for public review; do not commit access tokens, passwords, personal data or private signing
+keys.
 
 The repository is based on the technical specification v1.1 dated 21 September 2026. It intentionally separates the Android software running inside a postamat from the future Android technician application.
 
@@ -22,6 +23,7 @@ implementation sequence and exit gates.
 - `docs/testing/` - acceptance traceability for the original tests T01-T26 in the specification.
 - `docs/decisions/` - architecture decisions and unresolved choices.
 - `docs/procurement/` - approved equipment list and indicative cost estimate.
+- [`docs/procurement/clarification-01-cable-and-lock-quantity-ru.md`](docs/procurement/clarification-01-cable-and-lock-quantity-ru.md) - buyer response, equipment quantities, supplier cards and technical caveats.
 
 Backend integration handoff and open questions: [`docs/protocols/backend-developer-handoff-ru.md`](docs/protocols/backend-developer-handoff-ru.md).
 
@@ -69,6 +71,5 @@ Do not commit production tokens, signing keys, passwords, service grants, keysto
 
 ## Source specification
 
-The signed/commercial PDF remains outside the repository. The approved equipment and indicative
-prices are summarized in [`docs/procurement/equipment-estimate-2026-09.md`](docs/procurement/equipment-estimate-2026-09.md);
-the document intentionally does not publish order quantities or reserve split.
+The signed/commercial PDF remains outside the repository. Equipment quantities, reserve split,
+supplier links and indicative prices are recorded in [`docs/procurement/equipment-estimate-2026-09.md`](docs/procurement/equipment-estimate-2026-09.md) and the linked procurement clarification.

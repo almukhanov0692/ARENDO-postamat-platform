@@ -13,7 +13,7 @@ These items must be agreed before the corresponding implementation is treated as
 | Q07 | Event-log capacity and retention/full policy? | Nursultan / Sarvar | C05 |
 | Q08 | Backend signing/key provisioning and rotation format? | Nursultan / Sarvar | A03-A05 |
 | Q09 | Update package format, boot slots and recovery mechanism? Deferred. | Nursultan / Sarvar | U01-U06 |
-| Q10 | GPS hardware accepted, or manual server binding approved? Deferred. | Customer / Nursultan | T23 |
+| Q10 | Nursultan to implement device-side GPS/location reporting. Agree the server receive/binding payload with Sarvar when the device interface is ready; indoor accuracy and any manual override remain to be accepted. | Nursultan (device); Sarvar (server API) | T23 |
 | Q11 | Advertising formats, orientation, maximum file size and storage budget? | Customer / Nursultan | R01-R04 |
 | Q12 | Exact protocol transport and heartbeat/retry timings for the backend? | Nursultan / Sarvar | Integration acceptance |
 | Q13 | Future phone-to-postamat technician transport, USB roles and security handshake? Deferred and not blocking the device gateway. | Nursultan / customer | Technician application |

@@ -166,6 +166,17 @@ door physically opened. The backend must wait for a `door_opened` event or a sub
 verified physical sensor reading. The backend contract never includes USB, RS-485, Modbus addresses
 or controller terminal labels; those are local device-gateway configuration.
 
+### Feedback timeout after opening
+
+Target behavior for the selected stand: after an `open_cell` action, wait up to 30 seconds for the
+configured X-input feedback to report the expected transition. If no feedback arrives, keep the door
+state `unknown`, record a no-feedback/timeout result in the command journal, and do not show the
+opening as confirmed. Agree the exact result code and which component owns the timer during backend
+integration. This 30-second timeout is a requirement for the next software update; it is not yet
+implemented in the current APK/protocol flow. A late feedback event may still update the observed
+door state, with its own timestamp; it must not rewrite the earlier timeout as if confirmation had
+arrived on time.
+
 ## Status availability and interpretation
 
 | Status | Source of truth | Current availability |
@@ -176,7 +187,7 @@ or controller terminal labels; those are local device-gateway configuration.
 | Lock `locked` / `unlocked` | Requires a dedicated reliable lock-state signal. | Not available; APK reports `lock: "unknown"`. Do not infer it from an output/relay write. |
 | Network type (`wifi` / `cellular`) | Device network monitor, if added. | APK currently sends `net.kind: "unknown"`; backend can report WebSocket connectivity only. |
 | Cell block / technician note | Agreed backend/service workflow and an implemented device command/event. | Not in current device protocol implementation. |
-| GPS, payment, rental and QR state | Backend/business systems; device receives only the authorized cell command needed for actuation. | Not part of the current device status messages. |
+| GPS, payment, rental and QR state | GPS acquisition/reporting is Nursultan's device-side scope; backend owns business/payment/rental state and will agree coordinate ingestion/binding when the device payload is ready. | GPS is not in current device messages; payment/rental/QR remain backend/business state. |
 
 The app currently sends a heartbeat every 15 seconds by default (the server may set `heartbeatSec`
 between 5 and 300). The APK consumes `heartbeatSec`; the `pingSec` and `pongWaitSec` fields in older

@@ -76,7 +76,11 @@ These items must not be presented as completed:
 7. Confirm the supported Android device matrix, USB-RS485 VID/PID list and final Modbus register map.
 8. Implement the technician/service application and its signed, postamat-specific service grant.
    Bluetooth is a future secured service transport; it is not a replacement for the device WebSocket.
-9. Decide and implement GPS/manual location binding, advertising/audio, signed updates and rollback.
+9. GPS hardware/data acquisition and device-side location reporting are Nursultan's scope. The
+   backend should agree the receive/binding API when the device payload is ready. Advertising/audio,
+   signed updates and rollback remain unimplemented.
+10. Implement the 30-second wait for lock feedback after an opening command; absent feedback must
+    remain `unknown` and be logged as a timeout, not reported as a successful opening.
 
 ## Backend developer handoff
 
