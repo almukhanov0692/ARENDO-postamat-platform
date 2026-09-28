@@ -23,6 +23,8 @@ implementation sequence and exit gates.
 - `docs/decisions/` - architecture decisions and unresolved choices.
 - `docs/procurement/` - approved equipment list and indicative cost estimate.
 
+Backend integration handoff and open questions: [`docs/protocols/backend-developer-handoff-ru.md`](docs/protocols/backend-developer-handoff-ru.md).
+
 ## Product boundary
 
 The backend owns accounts, permissions, rentals, payments, business statuses, advertising assignments and release policy.

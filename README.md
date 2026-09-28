@@ -8,6 +8,7 @@ test bridge, delivery status and equipment estimate.
 - [Customer/backend project source](arendo-customer/README.md)
 - [Implementation status and remaining work](arendo-customer/docs/implementation-status.md)
 - [Backend WebSocket protocol](arendo-customer/docs/protocols/backend-v1.md)
+- [Ready-to-send backend developer handoff and questions](arendo-customer/docs/protocols/backend-developer-handoff-ru.md)
 - [Equipment and indicative prices](arendo-customer/docs/procurement/equipment-estimate-2026-09.md)
 - [Temporary laptop WebSocket bridge](local-server/README.md)
 

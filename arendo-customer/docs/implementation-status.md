@@ -104,6 +104,7 @@ Minimum server behavior:
 See the protocol and test documents before changing field names:
 
 - [`protocols/backend-v1.md`](protocols/backend-v1.md)
+- [`protocols/backend-developer-handoff-ru.md`](protocols/backend-developer-handoff-ru.md)
 - [`testing/acceptance-matrix.md`](testing/acceptance-matrix.md)
 
 ## Evidence and scope note

@@ -45,26 +45,19 @@ gates explicit. A prototype or simulator result is not a production acceptance r
 
 ## Current position
 
-Stage 0 is in progress. The official repository contains a buildable RK3568 Android gateway and a
-four-cell Modbus simulator path. The customer has approved a 10-relay exhibition build and Nursultan
-confirmed the sequential D01-X1/Y1 through D10-X10/Y10 map. The Android app is now configured for
-ten channels and the debug build compiles; physical ten-channel verification remains. A BSM-1616RB
-manual is now available and documents the candidate
-16-in/16-out map and Modbus functions; the physical revision/output type, unique module addresses,
-door wiring, power calculations and 14-channel field map still need confirmation. A WebSocket/local-
-server demonstration was exercised separately, but its production-safe implementation is not yet
-merged into the canonical gateway. No 14-door physical acceptance, technician grant flow, durable
-offline event queue, update/rollback, GPS, advertising/audio or final handover has been demonstrated.
+Stage 0 is in progress. The repository contains a buildable RK3568 Android gateway, a ten-channel
+exhibition profile, a WebSocket device client and the temporary laptop bridge. The current
+button/LED feedback is explicitly simulated; physical lock and door-sensor acceptance remains open.
+The APK implements `hello`, heartbeat, `open_cell`, `cell_report`, ACK and demo door events. Backend
+storage, UI, server-side offline detection and production credentials/signatures still need to be
+completed against [`protocols/backend-v1.md`](protocols/backend-v1.md) and the backend handoff.
+Durable event replay, technician grant/block flow, update/rollback, GPS, advertising/audio and full
+product acceptance have not been demonstrated.
 
-The gateway now routes configured logical cells by module slave ID and local X/Y point. A sequential
-two-module/28-cell arrangement exists only as a unit-tested routing fixture; the active APK remains
-on the approved ten-cell, slave-1 exhibition profile. Nursultan reports two 16-in/16-out BSM modules
-on one shared RS-485 bus for the 28-cell design. Unique IDs and the physical cell-to-module map have
-not yet been commissioned; the fixture is not an approved wiring plan.
-
-The next gate in Stage 1 is physical verification of the existing ten-channel exhibition map,
-followed by confirming the fitted BSM revision/output type and electrical design. For the formal
-acceptance path, assemble and test the first 14 real doors (two seven-cell cabinet sections), record
-the actual cell-to-module map, set and power-cycle-test unique Modbus IDs, then run T01-T05. The test matrix in
+The gateway includes unit-tested routing for multiple logical modules, but the configured APK and
+the physical production map remain separate commissioning work. No routing fixture is an approved
+cabinet wiring plan. The next gate is joint agreement on the backend status/command contract and
+physical verification of the exhibition I/O, followed by the formal 14-real-door acceptance path.
+The test matrix in
 [`testing/acceptance-matrix.md`](testing/acceptance-matrix.md) tracks evidence using the original
 T01-T26 identifiers from the specification.
