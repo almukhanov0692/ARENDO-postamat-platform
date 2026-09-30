@@ -11,8 +11,10 @@ gates explicit. A prototype or simulator result is not a production acceptance r
 - Interim exhibition build: 10 relay channels, approved by the customer according to Nursultan.
   This is a demonstration configuration only and does not replace the 14-door acceptance stand or
   the 28-door product target.
-- Product target: up to 28 installed cells across four seven-cell cabinets, with capacity for 32
-  logical channels. Four reserve channels are not installed cells and must not be shown as doors.
+- Product target: 28 installed cells across four seven-cell cabinets, with two 16-in/16-out modules
+  providing 32 channels of each type. The proposed map is M1/ID 1 → D01-D16, M2/ID 2 → D17-D28;
+  M2 channels 13-16 are reserve only and must not be shown as doors. Physical IDs/map remain to be
+  commissioned.
 - Device platform: RK3568-class Android controller, USB host, USB-RS485 and Modbus RTU. Exact I/O
   module SKUs, topology and production register map still require approval.
 - The four-button/LED setup is a simulator only. It cannot prove real lock actuation or door-sensor
@@ -45,12 +47,15 @@ gates explicit. A prototype or simulator result is not a production acceptance r
 
 ## Current position
 
-Stage 0 is in progress. The repository contains a buildable Android gateway tested on INBOX710
+As of 30 September 2026, Stage 0 remains in progress. The repository contains a buildable Android gateway tested on INBOX710
 (RK3399), a ten-channel
 exhibition profile, a WebSocket device client and the temporary laptop bridge. The current
 button/LED feedback is explicitly simulated; physical lock and door-sensor acceptance remains open.
-The procurement estimate is documented. Electrical drawing E-000 now summarizes the exhibition
-stand; E-001/E-002 and the remaining production drawing set are tracked in
+The reported procurement list is 1 RK3568 / 4+32 GB controller, two BSM-1616RB boards, 34 locks
+(28 + 6 spare), 400 m of 4-core cable, and a 12 V / 50 A / 600 W supply. Exact controller SKU,
+antenna/LTE and speaker variants, delivery and final tax/reserve calculation are still open; see the
+dated [procurement update](procurement/procurement-update-2026-09-30-ru.md). Electrical drawing E-000 summarizes the exhibition
+stand; E-001/E-002 and the production drawing set are tracked in
 [`hardware/electrical-r0/README.md`](hardware/electrical-r0/README.md).
 The APK implements `hello`, heartbeat, `open_cell` (2-second output pulse with automatic OFF),
 `cell_report`, ACK and demo X-input door events. Backend storage, UI, server-side offline detection
@@ -60,9 +65,10 @@ Durable event replay, technician grant/block flow, update/rollback, GPS, adverti
 product acceptance have not been demonstrated.
 
 The gateway includes unit-tested routing for multiple logical modules, but the configured APK and
-the physical production map remain separate commissioning work. No routing fixture is an approved
-cabinet wiring plan. The next gate is joint agreement on the backend status/command contract and
-physical verification of the exhibition I/O, followed by the formal 14-real-door acceptance path.
+the physical production map remain separate commissioning work. The proposed channel table is
+published as E-003 R0 for discussion, not installation. The next gate is to configure/verify unique
+module IDs, check the actual feedback semantics on one lock, agree the backend JSON/session/ACK
+contract, then continue the formal 14-real-door acceptance path.
 The test matrix in
 [`testing/acceptance-matrix.md`](testing/acceptance-matrix.md) tracks evidence using the original
 T01-T26 identifiers from the specification.

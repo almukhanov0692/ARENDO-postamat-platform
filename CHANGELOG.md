@@ -1,5 +1,19 @@
 # Changes
 
+## Project documentation update - 30 September 2026
+
+- Recorded the planned 28-cell procurement configuration: two BSM-1616RB modules on one shared
+  RS-485 bus, with distinct proposed Modbus IDs `1` and `2`; the physical IDs and wiring remain to
+  be commissioned.
+- Added the logical D01-D32 routing sheet: D01-D28 are the product target and D29-D32 are spare I/O
+  capacity, not installed doors.
+- Updated the procurement notes with the RK3568 4/32 GB controller selection, 34 locks (28 + 6
+  spare), 400 m cable, 12 V / 50 A supply, and separate antenna/audio caveats.
+- Added a backend-draft compatibility audit against the current APK. This is documentation and test
+  coverage only; it does not change the Android wire protocol or claim production acceptance.
+- Added endpoint routing assertions for the two-module software fixture. No APK release number is
+  changed by this documentation/test-only update.
+
 ## Android gateway 0.2.1 - 28 September 2026
 
 - The INBOX710 laboratory APK and local laptop bridge were tested together over Wi-Fi/WebSocket.

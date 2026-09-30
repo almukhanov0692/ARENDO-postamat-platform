@@ -4,7 +4,7 @@ Customer and backend-developer project area for the ARENDO postamat platform. Th
 prepared for public review; do not commit access tokens, passwords, personal data or private signing
 keys.
 
-The repository is based on the technical specification v1.1 dated 21 September 2026. It intentionally separates the Android software running inside a postamat from the future Android technician application.
+The repository is based on the technical specification v1.1 dated 21 September 2026. It intentionally separates the Android software running inside a postamat from the future Android technician application. The latest project snapshot is [30 September 2026](docs/progress-report-2026-09-30-ru.md).
 
 ## Repository status
 
@@ -13,7 +13,8 @@ must not be used to operate public postamats yet. See
 [`docs/implementation-status.md`](docs/implementation-status.md) for the current delivery status and
 the remaining work, and [`docs/implementation-plan.md`](docs/implementation-plan.md) for the staged
 implementation sequence and exit gates. The dated progress report is in
-[`docs/progress-report-2026-09-28-ru.md`](docs/progress-report-2026-09-28-ru.md).
+[`docs/progress-report-2026-09-30-ru.md`](docs/progress-report-2026-09-30-ru.md) (current); the
+previous snapshot remains at [`docs/progress-report-2026-09-28-ru.md`](docs/progress-report-2026-09-28-ru.md).
 
 ## Components
 
@@ -23,7 +24,10 @@ implementation sequence and exit gates. The dated progress report is in
 - `docs/protocols/` - versioned backend and USB contracts.
 - `docs/testing/` - acceptance traceability for the original tests T01-T26 in the specification.
 - `docs/decisions/` - architecture decisions and unresolved choices.
-- `docs/procurement/` - approved equipment list and indicative cost estimate.
+- `docs/procurement/` - reported equipment list, dated estimate and open cost reconciliation.
+- [`docs/procurement/procurement-update-2026-09-30-ru.md`](docs/procurement/procurement-update-2026-09-30-ru.md) - current quantities, accessory notes and audited price basis.
+- [`docs/hardware/electrical-r0/E-003-cell-map-r0.md`](docs/hardware/electrical-r0/E-003-cell-map-r0.md) - proposed D01-D32 channel mapping; not an installation drawing.
+- [`docs/protocols/backend-integration-audit-2026-09-30-ru.md`](docs/protocols/backend-integration-audit-2026-09-30-ru.md) - compatibility gaps between backend draft and current APK.
 - [`docs/hardware/electrical-r0/`](docs/hardware/electrical-r0/README.md) - preliminary USB–RS485,
   Modbus, lock-power and feedback drawings; not yet an installation release.
 - [`docs/procurement/clarification-01-cable-and-lock-quantity-ru.md`](docs/procurement/clarification-01-cable-and-lock-quantity-ru.md) - buyer response, equipment quantities, supplier cards and technical caveats.

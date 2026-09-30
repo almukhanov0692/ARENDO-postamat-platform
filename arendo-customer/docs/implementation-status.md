@@ -1,6 +1,6 @@
 # ARENDO implementation status
 
-Status date: 28 September 2026
+Status date: 30 September 2026
 Repository: `almukhanov0692/ARENDO-postamat-platform`
 
 This document is the handoff summary for the customer and backend team. It separates the parts that
@@ -81,6 +81,27 @@ The current Android source includes the device-side WebSocket client and the loc
 
 The canonical message contract is documented in [`protocols/backend-v1.md`](protocols/backend-v1.md).
 The laptop bridge remains an in-memory development tool, not Sarvar's production server.
+The backend developer's latest draft has not yet been proven compatible with this APK. In particular,
+the nested-versus-flat command envelope, `sessionId` echo, exact ACK/event fields and the distinction
+between relay-pulse acceptance and sensor-confirmed door state need agreement. See the
+[`30 September compatibility audit`](protocols/backend-integration-audit-2026-09-30-ru.md).
+
+### Procurement and 28-cell routing — 30 September 2026
+
+- Reported procurement configuration: RK3568 controller, 4 GB RAM / 32 GB storage; two
+  BSM-1616RB 16-in/16-out modules; 34 locks (28 + 6 spare); 400 m 4-core cable; and 12 V / 50 A /
+  600 W supply. The exact controller variant, LTE module/antenna and speaker SKU remain to be
+  confirmed against the order.
+- One shared RS-485 bus is planned. Proposed software mapping: module 1 / ID 1 → D01-D16;
+  module 2 / ID 2 → D17-D28; the remaining four points on module 2 are spares. This map is covered
+  by software routing tests but has not been set on or commissioned with physical boards.
+- The two-second relay pulse is implemented. The requested 30-second wait for actual feedback is
+  not yet implemented. Feedback contact meaning and polarity must be measured on the selected lock;
+  the current X-input demo cannot establish physical door position.
+- The 28 September KZT estimate is historical. A 30 September draft total contained inconsistent
+  line-item conversions and is not treated as a final payable amount. The current auditable CNY
+  product subtotal and unresolved tax/logistics basis are recorded in the
+  [procurement update](procurement/procurement-update-2026-09-30-ru.md).
 
 ## Not production-ready yet
 
@@ -96,7 +117,8 @@ These items must not be presented as completed:
    expired, failed and device offline.
 6. Run the acceptance cases for invalid/expired/duplicate commands, Internet loss, Modbus loss and
    offline event replay.
-7. Confirm the supported Android device matrix, USB-RS485 VID/PID list and final Modbus register map.
+7. Confirm the supported Android device matrix, USB-RS485 VID/PID list, exact RK3568 controller
+   variant and commissioned Modbus register/cell map.
 8. Implement the technician/service application and its signed, postamat-specific service grant.
    Bluetooth is a future secured service transport; it is not a replacement for the device WebSocket.
 9. GPS hardware/data acquisition and device-side location reporting are Nursultan's scope. The

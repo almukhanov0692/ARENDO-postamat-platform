@@ -67,7 +67,8 @@ lock moved or a door physically opened; door state comes from the independent in
 
 ## Module routing in the Android gateway
 
-The gateway now represents each logical cell with its own Modbus slave ID, input point and output
+The proposed D01-D32 address/channel table is published as [E-003 R0](../hardware/electrical-r0/E-003-cell-map-r0.md);
+it is not a commissioned wiring plan. The gateway represents each logical cell with its own Modbus slave ID, input point and output
 point. Reads are grouped by slave ID and serialized on the one RS-485 port; an output write is sent
 to the mapped slave and local output address. Thus repeated local labels such as X2/Y2 on two boards
 are unambiguous: the Modbus slave ID selects the board, and the point address selects its local

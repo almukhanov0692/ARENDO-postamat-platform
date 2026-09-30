@@ -38,6 +38,35 @@ public final class ModbusCellMapTest {
     }
 
     @Test
+    public void proposed28CellMapUsesBothSixteenPointModulesWithoutInventingSpareDoors() {
+        ModbusCellMap map = ModbusCellMap.proposedSequential28(1, 2);
+
+        assertEquals(28, map.getCells().size());
+
+        ModbusCellMap.Cell cell16 = map.getCell(15);
+        assertEquals("16", cell16.getCode());
+        assertEquals(1, cell16.getSlaveId());
+        assertEquals(16, cell16.getInputChannel());
+        assertEquals(16, cell16.getOutputChannel());
+        assertEquals(15, cell16.getInputAddress());
+        assertEquals(15, cell16.getOutputAddress());
+
+        ModbusCellMap.Cell cell17 = map.getCell(16);
+        assertEquals("17", cell17.getCode());
+        assertEquals(2, cell17.getSlaveId());
+        assertEquals(1, cell17.getInputChannel());
+        assertEquals(1, cell17.getOutputChannel());
+
+        ModbusCellMap.Cell cell28 = map.getCell(27);
+        assertEquals("28", cell28.getCode());
+        assertEquals(2, cell28.getSlaveId());
+        assertEquals(12, cell28.getInputChannel());
+        assertEquals(12, cell28.getOutputChannel());
+        assertEquals(11, cell28.getInputAddress());
+        assertEquals(11, cell28.getOutputAddress());
+    }
+
+    @Test
     public void rejectsDuplicateModuleAddresses() {
         try {
             ModbusCellMap.proposedSequential28(1, 1);
