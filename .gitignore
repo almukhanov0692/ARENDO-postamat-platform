@@ -15,3 +15,20 @@ __pycache__/
 
 # Local inspection exports
 *.inspect.ndjson
+
+# Local Obsidian workspace and duplicate navigation mirrors
+/.obsidian/
+/00_Обзор/
+/01_ТЗ_и_требования/
+/02_Оборудование_и_руководства/
+/03_Схемы_и_карты/
+/04_Modbus_и_интеграции/
+/05_ПО_и_релизы/
+/06_Тестирование_и_приёмка/
+/07_Закупки_и_поставки/
+
+# Local source snapshots and scratch exports
+/90_Исходные_снимки/
+/archive/
+/outputs/
+README_New_Project_4.md

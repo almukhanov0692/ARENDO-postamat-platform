@@ -1,5 +1,12 @@
 # Changes
 
+## ARENDO project library update — 8 October 2026
+
+- Set the `ARENDO` folder as the canonical local Git working copy on the existing `main` history.
+- Recorded the owner-confirmed product target of 28 logical doors, the temporary 10-output / 4-feedback profile, and the selected Variant B price of 1,350,000 KZT with the agreed first-launch equipment.
+- Added the canonical document index, Modbus Poll screenshots, saved manual and specification pages, procurement inventory, commissioning record template, and milestone evidence handoff.
+- No Android application code or APK was changed; the demo version remains `0.2.2-demo`.
+
 ## Engineering audit and documentation correction - 2 October 2026
 
 - Added a cross-discipline audit against ARENDO TZ v1.1 and the current source/test evidence.

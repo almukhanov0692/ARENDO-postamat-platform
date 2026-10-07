@@ -24,6 +24,13 @@ gates explicit. A prototype or simulator result is not a production acceptance r
 - Server-facing payloads use stable logical identifiers (`postamatId`, `cellCode`, command/event
   IDs). USB, Modbus slave IDs, X/Y terminals and serial settings stay inside the device gateway.
 
+## Current user-confirmed implementation profile — 7 October 2026
+
+- The application is designed for **28 logical doors and 28 relay outputs from the outset**. If the technical specification groups them as fourteen pairs, they still map to 28 individual `cellCode` values.
+- The temporary project-delivery hardware has **10 relay outputs and feedback inputs for 4 doors**. Keep all 28 logical cells in the software map; enable only the 10 physically connected outputs and show the other 18 as unavailable until their hardware is connected. Do not report an unavailable cell as opened or closed.
+- The intended full hardware has two 16-output Modbus I/O modules: 28 outputs serve doors; any extra channels remain unused/reserve. Keep module model, revision, slave ID, channel count and feedback mapping in configuration rather than treating relay count as the product limit.
+- The exact 10-output and 16-output module profiles and their registers will be confirmed against the labels and manuals. This does not block building the logical 28-cell map.
+- The BSM-series manual lists station ID 1 as the serial-port default. If the two modules share one RS-485 bus, give them unique IDs; do not assume both factory-default modules can remain at ID 1. See [decision 0004](decisions/0004-28-cell-target-and-temporary-10-4-profile.md).
 ## Stages and exit gates
 
 | Stage | Work and specification trace | Exit gate |

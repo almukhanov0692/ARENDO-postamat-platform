@@ -1,31 +1,27 @@
-# ARENDO postamat platform
+# ARENDO — проектная библиотека
 
-Public project repository for the ARENDO postamat device software, backend integration contract,
-test bridge, delivery status and equipment estimate.
+Папка `ARENDO` — корень рабочей копии и Git-репозитория проекта. Ветка `main` связана с [публичным репозиторием ARENDO](https://github.com/almukhanov0692/ARENDO-postamat-platform). Канонические исходники, требования, руководства, схемы, закупочные материалы и сборки собраны в разделах ниже.
 
-Current device-gateway demo build: **0.2.2-demo** (2 October 2026). It is not production-accepted.
-See [changes](CHANGELOG.md) and the [2 October status report](arendo-customer/docs/progress-report-2026-10-02-ru.md).
+## Навигация по проекту
 
-## Project materials
+- [Полный указатель документов](arendo-customer/docs/README.md)
+- **Требования:** [ТЗ и требования](arendo-customer/docs/requirements.md), [изображения страниц ТЗ](arendo-customer/docs/requirements/README.md), [архитектура](arendo-customer/docs/architecture.md), [план реализации](arendo-customer/docs/implementation-plan.md), [открытые вопросы](arendo-customer/docs/open-questions.md)
+- **Оборудование:** [руководство BSM и заметки по Modbus Poll](arendo-customer/docs/hardware/README_modbus-poll-ru.md), [сохранённые страницы руководства](arendo-customer/docs/hardware/bsm-series-manual/README.md), [предварительные схемы R0](arendo-customer/docs/hardware/electrical-r0/README.md)
+- **Связь и интеграция:** [Modbus и backend-протоколы](arendo-customer/docs/protocols/README.md), [модуль Android-шлюза](arendo-customer/device-android/README.md), [локальный сервер-мост](local-server/README.md)
+- **Проверки:** [матрица испытаний и приёмки](arendo-customer/docs/testing/README.md), [протокол выездной наладки](arendo-customer/docs/testing/commissioning-record-template-ru.md), [статус реализации](arendo-customer/docs/implementation-status.md), [инженерный аудит](arendo-customer/docs/engineering-audit-2026-10-02-ru.md), [открытые решения](arendo-customer/docs/decisions/)
+- **Этапная оплата:** [суммы по ТЗ и доказательства этапов](arendo-customer/docs/commercial/milestone-payment-and-evidence-ru.md), [пакет независимой оценки](arendo-customer/docs/commercial/independent-review-handoff-ru.md)
+- **Закупки:** [сводка позиций и статусов](arendo-customer/docs/procurement/procurement-status-inventory-ru.md), [обновление от 30 сентября](arendo-customer/docs/procurement/procurement-update-2026-09-30-ru.md), [первоначальная оценка](arendo-customer/docs/procurement/equipment-estimate-2026-09.md), [пояснение по кабелю и замкам](arendo-customer/docs/procurement/clarification-01-cable-and-lock-quantity-ru.md), [таблица XLSX](arendo-customer/docs/procurement/estimates/ARENDO_purchase_estimate_2026-09-28.xlsx)
+- **Отчёты:** [28 сентября](arendo-customer/docs/progress-report-2026-09-28-ru.md), [30 сентября](arendo-customer/docs/progress-report-2026-09-30-ru.md), [2 октября](arendo-customer/docs/progress-report-2026-10-02-ru.md)
+- **Релизы:** [APK](output/apk/README.md), [PDF-файлы](output/pdf/README.md), [статус версий](PROJECT_VERSION_STATUS.md)
 
-The canonical Android gateway is under `arendo-customer/device-android/`. The root `app/` module is
-an older prototype retained for history; do not use it for current builds or changes.
+## Состояние версий
 
-- [Customer/backend project source](arendo-customer/README.md)
-- [Implementation status and remaining work](arendo-customer/docs/implementation-status.md)
-- [Backend WebSocket protocol](arendo-customer/docs/protocols/backend-v1.md)
-- [Current demo WebSocket exchange, with JSON examples](arendo-customer/docs/protocols/demo-websocket-handoff-ru.md)
-- [Ready-to-send backend developer handoff and questions](arendo-customer/docs/protocols/backend-developer-handoff-ru.md)
-- [Equipment and indicative prices](arendo-customer/docs/procurement/equipment-estimate-2026-09.md)
-- [30 September project status and decisions](arendo-customer/docs/progress-report-2026-09-30-ru.md)
-- [2 October project status and T05 software correction](arendo-customer/docs/progress-report-2026-10-02-ru.md)
-- [Full engineering audit and next gates (2 October)](arendo-customer/docs/engineering-audit-2026-10-02-ru.md)
-- [Proposed D01-D32 Modbus routing sheet (not an installation drawing)](arendo-customer/docs/hardware/electrical-r0/E-003-cell-map-r0.md)
-- [Backend draft compatibility audit](arendo-customer/docs/protocols/backend-integration-audit-2026-09-30-ru.md)
-- [Preliminary electrical drawings R0 — not for installation](arendo-customer/docs/hardware/electrical-r0/README.md)
-- [Full procurement clarification and supplier links](arendo-customer/docs/procurement/clarification-01-cable-and-lock-quantity-ru.md)
-- [Temporary laptop WebSocket bridge](local-server/README.md)
+Текущая Android-сборка — **0.2.2-demo от 2 октября 2026 года**. В отчёте указано, что её APK собран, но на стенд не установлен. Последняя описанная установленная версия — **0.2.1 на лабораторном INBOX710**. Отдельного релизного тега для APK в GitHub нет. Обновление документов и привязка рабочей папки к GitHub не меняют версию APK и не означают производственную приёмку.
 
-The current four-button/LED stand is a demonstration simulator, not a production locker. The
-repository distinguishes tested behavior from proposed hardware configuration and remaining
-acceptance work.
+## Что подтверждено и что требует проверки
+
+Цель программы — карта 28 дверей и 28 выходов. Временная поставочная конфигурация — 10 выходов и обратная связь для 4 дверей. Отдельный этап 2 по ТЗ предусматривает стенд на 14 замков; выполнение этого критерия имеющимися материалами не подтверждено. Наличие исходников, симулятора или APK не подтверждает приёмку реального шкафа и замков.
+
+Страницы Modbus Poll пользователя показывают COM11 и 8E1, а руководство BSM указывает заводские 9600 8N1. Скриншот функции 16 не подтверждает команду управления реле; руководство указывает функции 05 и 0F. Сверьте модель, ревизию и настройки платы перед работой с реальным оборудованием.
+
+В закупочных документах расчёт 28 замков по 2 А даёт 56 А, что выше номинала выбранного источника 12 В/50 А без учёта остальных нагрузок. Заказы и доставка считаются подтверждёнными только при наличии платёжных или транспортных документов.
