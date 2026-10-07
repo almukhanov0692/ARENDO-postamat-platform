@@ -1,5 +1,25 @@
 # Changes
 
+## Engineering audit and documentation correction - 2 October 2026
+
+- Added a cross-discipline audit against ARENDO TZ v1.1 and the current source/test evidence.
+- Recorded the published legacy device credential for rotation, plus two pre-lock blockers:
+  independent output pulse cutoff and verified load/power limits. The secret value is not reproduced.
+- Corrected procurement notes so the 30-second feedback timeout is described as not yet implemented
+  and direct lock switching is not presented as electrically approved.
+- No production protocol or physical acceptance status changed; the 14-door stand remains unverified.
+
+## Android gateway 0.2.2-demo - 2 October 2026
+
+- Feedback-backed cells become `unknown` when Modbus polling fails or the USB port closes; the first
+  sample after recovery establishes a new baseline instead of inventing a transition during the
+  outage.
+- Results from a closed or replaced Modbus gateway are ignored.
+- `DoorFeedbackTrackerTest` passes. This is a demo software build; real module/line failure testing,
+  the 14-door bench and production acceptance remain open.
+
+The APK is `output/apk/ARENDO-Postamat-0.2.2-demo.apk`.
+
 ## Project documentation update - 30 September 2026
 
 - Recorded the planned 28-cell procurement configuration: two BSM-1616RB modules on one shared

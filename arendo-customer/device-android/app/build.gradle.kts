@@ -17,8 +17,8 @@ android {
         applicationId = "kz.arendo.device"
         minSdk = 21
         targetSdk = 35
-        versionCode = 3
-        versionName = "0.2.1"
+        versionCode = 4
+        versionName = "0.2.2-demo"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

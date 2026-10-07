@@ -93,8 +93,9 @@ assume logical cell numbering or cabinet wiring until the commissioned map is ap
 
 ## Current stand interpretation
 
-- `open_cell` switches the mapped output ON for 2 seconds, then OFF automatically. Output/LED state
-  does not determine `door` state.
+- `open_cell` switches the mapped output ON and schedules an OFF write after 2 seconds during normal
+  APK/Modbus operation. This is a software timer, not a verified independent cutoff on app/USB/Modbus
+  failure. Output/LED state does not determine `door` state.
 - For D01-D04, active X-input is currently interpreted as `closed` and inactive X as `open`;
   transitions produce demo door events marked `simulated:true`. D05-D10 remain `unknown`.
 - Door closure is a physical action, not a remote output-OFF command. An open or broken feedback

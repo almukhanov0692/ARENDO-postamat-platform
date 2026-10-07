@@ -49,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 
 import kz.arendo.device.modbus.ModbusRtuClient;
 import kz.arendo.device.modbus.ModbusCellMap;
+import kz.arendo.device.modbus.DoorFeedbackTracker;
 import kz.arendo.device.modbus.ModbusIoGateway;
 import kz.arendo.device.modbus.UsbSerialTransport;
 import kz.arendo.device.backend.CommandIdLedger;
@@ -64,9 +65,8 @@ public final class MainActivity extends Activity {
 
     private final ScheduledExecutorService io = Executors.newSingleThreadScheduledExecutor();
     private final ScheduledExecutorService backendTimer = Executors.newSingleThreadScheduledExecutor();
-    private final boolean[] previousInputs = new boolean[CELL_COUNT];
+    private final DoorFeedbackTracker doorFeedback = new DoorFeedbackTracker(CELL_MAP);
     private final boolean[] outputActive = new boolean[CELL_COUNT];
-    private final String[] doorStates = new String[CELL_COUNT];
     private final ScheduledFuture<?>[] outputPulseOffTasks = new ScheduledFuture<?>[CELL_COUNT];
     private final TextView[] cellStates = new TextView[CELL_COUNT];
     private final Button[] cellButtons = new Button[CELL_COUNT];
@@ -78,8 +78,8 @@ public final class MainActivity extends Activity {
     private ModbusIoGateway ioGateway;
     private ScheduledFuture<?> polling;
     private ScheduledFuture<?> heartbeat;
-    private boolean inputsInitialized;
     private volatile boolean modbusOnline;
+    private volatile boolean shuttingDown;
     private TextView usbStatus;
     private TextView backendStatus;
     private TextView logView;
@@ -120,9 +120,6 @@ public final class MainActivity extends Activity {
         getWindow().setStatusBarColor(Color.rgb(15, 23, 42));
         getWindow().setNavigationBarColor(Color.rgb(244, 247, 251));
         usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-        for (int index = 0; index < CELL_COUNT; index++) {
-            doorStates[index] = "unknown";
-        }
         try {
             commandLedger = new CommandIdLedger(getFilesDir());
         } catch (IOException error) {
@@ -424,7 +421,7 @@ public final class MainActivity extends Activity {
         for (int index = 0; index < CELL_COUNT; index++) {
             JSONObject cell = new JSONObject();
             cell.put("code", CELL_MAP.getCell(index).getCode());
-            cell.put("door", doorStates[index] == null ? "unknown" : doorStates[index]);
+            cell.put("door", doorFeedback.getState(index));
             cell.put("lock", "unknown");
             cells.put(cell);
         }
@@ -545,7 +542,7 @@ public final class MainActivity extends Activity {
             scheduleOutputPulseOff(index, gateway);
             final int cellIndex = index;
             runOnUiThread(() -> {
-                updateCell(cellIndex, doorStates[cellIndex]);
+                updateCell(cellIndex, doorFeedback.getState(cellIndex));
                 appendLog("Команда open_cell D" + code + " · импульс Y"
                         + CELL_MAP.getCell(cellIndex).getOutputChannel() + " на 2 секунды; ждём X");
             });
@@ -575,7 +572,7 @@ public final class MainActivity extends Activity {
                 outputActive[index] = false;
                 outputPulseOffTasks[index] = null;
                 runOnUiThread(() -> {
-                    updateCell(index, doorStates[index]);
+                    updateCell(index, doorFeedback.getState(index));
                     appendLog("Импульс завершён: Y" + CELL_MAP.getCell(index).getOutputChannel()
                             + " OFF · D" + CELL_MAP.getCell(index).getCode());
                 });
@@ -755,8 +752,8 @@ public final class MainActivity extends Activity {
                 serialPort = openedPort;
                 modbus = new ModbusRtuClient(new UsbSerialTransport(openedPort));
                 ioGateway = new ModbusIoGateway(modbus, CELL_MAP);
+                invalidateDoorFeedback();
                 modbusOnline = true;
-                inputsInitialized = false;
                 runOnUiThread(() -> {
                     setUsbStatus("Modbus RTU подключён · 9600 8N1", true);
                     setButtonsEnabled(true);
@@ -784,39 +781,54 @@ public final class MainActivity extends Activity {
             }
             try {
                 boolean[] inputs = gateway.readCellInputs();
+                if (gateway != ioGateway) {
+                    return;
+                }
+                boolean wasOffline = !modbusOnline;
+                DoorFeedbackTracker.Snapshot snapshot = doorFeedback.update(inputs);
                 modbusOnline = true;
-                boolean firstSample = !inputsInitialized;
+                if (wasOffline) {
+                    runOnUiThread(() -> {
+                        setUsbStatus("RTU подключён · 9600 8N1", true);
+                        appendLog("Modbus: связь восстановлена; состояния перечитаны");
+                    });
+                }
                 for (int index = 0; index < CELL_COUNT; index++) {
                     if (!CELL_MAP.getCell(index).hasDoorInput()) {
                         continue;
                     }
-                    boolean activated = inputs[index];
-                    String nextState = activated ? "closed" : "open";
-                    if (firstSample) {
-                        doorStates[index] = nextState;
+                    if (snapshot.hasChanged(index)) {
                         final int cell = index;
-                        runOnUiThread(() -> updateCell(cell, nextState));
-                    } else if (activated != previousInputs[index]) {
-                        doorStates[index] = nextState;
-                        final int cell = index;
-                        String eventKind = activated ? "door_closed" : "door_opened";
-                        runOnUiThread(() -> {
-                            updateCell(cell, nextState);
-                            appendLog("D" + CELL_MAP.getCell(cell).getCode()
-                                    + " " + nextState + " · подтверждено входом X"
-                                    + CELL_MAP.getCell(cell).getInputChannel());
-                        });
-                        sendDoorEvent(index, eventKind, "demo_modbus_x");
+                        String nextState = snapshot.getState(index);
+                        if (snapshot.hasTransition(index)) {
+                            String eventKind = "closed".equals(nextState)
+                                    ? "door_closed" : "door_opened";
+                            runOnUiThread(() -> {
+                                updateCell(cell, nextState);
+                                appendLog("D" + CELL_MAP.getCell(cell).getCode()
+                                        + " " + nextState + " · подтверждено входом X"
+                                        + CELL_MAP.getCell(cell).getInputChannel());
+                            });
+                            sendDoorEvent(index, eventKind, "demo_modbus_x");
+                        } else {
+                            runOnUiThread(() -> updateCell(cell, nextState));
+                        }
                     }
-                    previousInputs[index] = activated;
                 }
-                inputsInitialized = true;
             } catch (Exception error) {
+                if (gateway != ioGateway) {
+                    return;
+                }
+                boolean wasOnline = modbusOnline;
                 modbusOnline = false;
-                runOnUiThread(() -> {
-                    setUsbStatus("Ошибка Modbus: " + safeMessage(error), false);
-                    appendLog("Modbus: " + safeMessage(error));
-                });
+                invalidateDoorFeedback();
+                if (wasOnline) {
+                    runOnUiThread(() -> {
+                        setUsbStatus("Ошибка: " + safeMessage(error), false);
+                        appendLog("Modbus: " + safeMessage(error)
+                                + " · состояние датчиков теперь unknown");
+                    });
+                }
             }
         }, 0, 300, TimeUnit.MILLISECONDS);
     }
@@ -836,7 +848,7 @@ public final class MainActivity extends Activity {
                 scheduleOutputPulseOff(index, gateway);
                 ModbusCellMap.Cell mapping = CELL_MAP.getCell(index);
                 runOnUiThread(() -> {
-                    updateCell(index, doorStates[index]);
+                    updateCell(index, doorFeedback.getState(index));
                     appendLog("Тестовый импульс Y" + mapping.getOutputChannel()
                             + " · 2 секунды; дверца — только по X-входу");
                 });
@@ -865,6 +877,19 @@ public final class MainActivity extends Activity {
             usbStatus.setText("Modbus: " + value);
             usbStatus.setTextColor(online ? Color.rgb(22, 163, 74) : Color.rgb(185, 28, 28));
         });
+    }
+
+    private void invalidateDoorFeedback() {
+        DoorFeedbackTracker.Snapshot snapshot = doorFeedback.markUnavailable();
+        if (shuttingDown) {
+            return;
+        }
+        for (int index = 0; index < CELL_COUNT; index++) {
+            if (snapshot.hasChanged(index)) {
+                final int cell = index;
+                runOnUiThread(() -> updateCell(cell, snapshot.getState(cell)));
+            }
+        }
     }
 
     private void setButtonsEnabled(boolean enabled) {
@@ -901,6 +926,7 @@ public final class MainActivity extends Activity {
         }
         modbus = null;
         modbusOnline = false;
+        invalidateDoorFeedback();
         ioGateway = null;
         UsbSerialPort port = serialPort;
         serialPort = null;
@@ -916,6 +942,7 @@ public final class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        shuttingDown = true;
         backendRequested = false;
         backendConnected = false;
         backendGeneration++;

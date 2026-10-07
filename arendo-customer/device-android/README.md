@@ -1,6 +1,11 @@
 # ARENDO Device Android
 
 Android gateway tested on the INBOX710 (RK3399) laboratory unit; RK3568 is the proposed production controller.
+The 0.2.2-demo package includes the 2 October feedback-state recovery correction; it has not been
+accepted on real locks or the 14-door stand.
+
+Download: [ARENDO-Postamat-0.2.2-demo.apk](../../output/apk/ARENDO-Postamat-0.2.2-demo.apk). The
+package was built from the debug variant and has not been installed on a device.
 
 ## Implemented in the foundation build
 
@@ -11,7 +16,9 @@ Android gateway tested on the INBOX710 (RK3399) laboratory unit; RK3568 is the p
 - unit-tested gateway API for `0x01` output-state readback, kept separate from physical door status;
 - validated logical-cell map that routes I/O by module slave ID and local point address;
 - CRC, response slave-ID/function, length and write-echo validation;
-- transition-only X-input door feedback for D01-D04; 2-second output pulse with automatic OFF;
+- transition-only X-input door feedback for D01-D04; 2-second software-scheduled output pulse.
+  Independent cutoff on app/USB/Modbus failure is not verified; do not treat the software timer as
+  hardware protection for a real lock.
 - WebSocket client with device-token header, `hello`/`welcome`, heartbeat, reconnect,
   addressed `open_cell`, acknowledgements and demo door events;
 - persistent command-ID deduplication ledger to prevent replaying an already-seen open command;

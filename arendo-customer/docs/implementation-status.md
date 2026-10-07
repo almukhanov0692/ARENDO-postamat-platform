@@ -1,6 +1,6 @@
 # ARENDO implementation status
 
-Status date: 30 September 2026
+Status date: 2 October 2026
 Repository: `almukhanov0692/ARENDO-postamat-platform`
 
 This document is the handoff summary for the customer and backend team. It separates the parts that
@@ -46,9 +46,10 @@ specification; they are not replaced with locally invented test numbering.
 
 ### Ten-output / four-input demonstration behavior
 
-- An `open_cell` command pulses one output for 2 seconds, then automatically switches it OFF. Output
-  state is not treated as door position. Available X-input feedback determines `open`/`closed` for
-  D01-D04; D05-D10 remain `unknown` without feedback.
+- An `open_cell` command schedules an OFF write after a 2-second pulse during normal APK/Modbus
+  operation. This is not an independent hardware cutoff: OFF under process death, USB loss or a
+  Modbus failure has not been proven. Output state is not treated as door position. Available
+  X-input feedback determines `open`/`closed` for D01-D04; D05-D10 remain `unknown` without feedback.
 - On the current wiring, active X is interpreted as `closed`, inactive X as `open`. Applying +12 V to
   X1-X4 was observed to update both the APK and local monitor. This proves the demo input path, not
   the polarity or semantics of the ordered lock's feedback pair. An open circuit can also result
@@ -67,11 +68,13 @@ The current Android source includes the device-side WebSocket client and the loc
 
 - The app sends the device token in `X-Device-Token`; the token is not logged or saved with URL settings.
 - `hello`/`welcome`, heartbeat, `open_cell`, `cell_report`, acknowledgements and demo X-input door events are implemented in the Android source.
-- `open_cell` energizes one mapped output for 2 seconds, then switches it OFF. The ACK is not a physical door-state confirmation. There is no remote close command; a person closes the door physically.
+- `open_cell` energizes one mapped output and schedules OFF after 2 seconds. The ACK is not a
+  physical door-state confirmation. The pulse is not hardware-limited and failure/disconnect OFF
+  behavior remains a safety gate. There is no remote close command; a person closes the door physically.
 - Door state is derived from the available feedback inputs; the current button-as-door inputs remain simulated. D05-D10 have no feedback input and stay `unknown`.
 - The temporary laptop dashboard has per-cell opening, sequential open-all and status-report actions. It does not expose a close command.
 - `map-7` is the current temporary demo `postamatId`, not a category, cabinet number, or Modbus address; backend must provide the production identity.
-- Updated safe-pulse APK is version `0.2.1`; the local dashboard blocks relay commands from older APKs that do not advertise `relay_pulse_2s`.
+- The APK installed on the INBOX710 remains `0.2.1`; the local dashboard blocks relay commands from older APKs that do not advertise `relay_pulse_2s`. A newer `0.2.2-demo` package was built on 2 October with the T05 feedback recovery correction; it has not been installed on the stand.
 - Reconnect uses bounded backoff. Processed command IDs are persisted locally to prevent repeating an open operation.
 - The temporary bridge requires a matching token. Its command/dashboard API binds to laptop loopback; only the WebSocket port is intended for LAN/ngrok testing.
 - Android unit tests and debug APK build pass. The connected APK registered through WebSocket and
@@ -98,6 +101,10 @@ between relay-pulse acceptance and sensor-confirmed door state need agreement. S
 - The two-second relay pulse is implemented. The requested 30-second wait for actual feedback is
   not yet implemented. Feedback contact meaning and polarity must be measured on the selected lock;
   the current X-input demo cannot establish physical door position.
+- Output pulses are scheduled independently per cell, so commands to different cells can overlap.
+  The provisional 12 V / 50 A supply is below the arithmetic 56 A for 28 locks at the stated 2 A
+  each, before Android/controller/audio loads. The concurrency limit, queue or reject behavior,
+  exact lock current and supply design must be agreed before production outputs are enabled; see Q18.
 - The 28 September KZT estimate is historical. A 30 September draft total contained inconsistent
   line-item conversions and is not treated as a final payable amount. The current auditable CNY
   product subtotal and unresolved tax/logistics basis are recorded in the
@@ -162,3 +169,20 @@ The four-button stand is valid evidence for a simulated logical flow `command ->
 status` only. It is not evidence for T01's 14 real doors or production lock security, door-sensor
 accuracy, payment processing, QR authorization, GPS accuracy, Bluetooth authorization or update
 rollback. Those require their own hardware, backend and acceptance tests.
+
+## Update — 2 October 2026
+
+- The Android gateway clears feedback-backed cell states to `unknown` on a Modbus polling failure or
+  port close. On recovery, the first input sample establishes a fresh baseline and is not emitted as
+  a door-transition event. Results from a retired Modbus gateway are ignored.
+- The focused regression is covered by `DoorFeedbackTrackerTest`; `gradlew.bat testDebugUnitTest`
+  passed on 2 October. This is software evidence only. T05 remains partial until the real module/line
+  failure cases and the 14-door stand are commissioned and recorded.
+- Debug APK `0.2.2-demo` was built with `gradlew.bat assembleDebug` and copied to
+  [`output/apk/ARENDO-Postamat-0.2.2-demo.apk`](../../output/apk/ARENDO-Postamat-0.2.2-demo.apk).
+  SHA-256: `CA02849F8CB537D3D90FFB727EE2A9655463B23B46A334EF71566A38DA035F13`. No local WebSocket
+  URL or token was present in the build environment. The APK has not been installed on a device or
+  accepted on physical locks.
+- Stage 0 remains open: production controller/module revisions and wiring are not commissioned, and
+  the backend command envelope, session handling, ACK/event fields and offline delivery contract
+  still need joint agreement. No physical acceptance test is marked passed.

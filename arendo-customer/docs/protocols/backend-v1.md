@@ -111,7 +111,7 @@ Commands accepted by the current APK:
 
 | Command | Required payload | Device behavior |
 |---|---|---|
-| `open_cell` | `cellCode` | Validate postamat, expiry and cell; pulse the mapped lock output for 2 seconds, then switch it OFF and acknowledge command acceptance. This does not prove the door opened. |
+| `open_cell` | `cellCode` | Validate postamat, expiry and cell; during normal operation the APK schedules the mapped output OFF after 2 seconds and acknowledges command acceptance. This is not an independent hardware cutoff and does not prove the door opened. |
 | `cell_report` | none | Send a heartbeat snapshot and acknowledge the report request. |
 
 `close_cell`, `confirm_closed`, `block_cell` and `unblock_cell` are **not implemented** by the current APK. Do not
@@ -165,8 +165,9 @@ The backend displays the reported state for each logical `cellCode`, for example
 | `unknown` | No reliable door feedback is available. |
 
 An `open_cell` acknowledgement means that the device accepted the command and started the output
-pulse; it is not proof that the door physically opened. The output turns OFF automatically after
-two seconds, but that does not mean a person physically closed the door. The backend
+pulse; it is not proof that the door physically opened. The APK schedules an OFF write after two
+seconds during normal operation; this software timer is not a verified hardware cutoff on app, USB
+or Modbus failure. That also does not mean a person physically closed the door. The backend
 must wait for a `door_opened` / `door_closed` event or a subsequent reported door state from feedback.
 Demo/simulated feedback must be marked as such and must not be presented as a verified physical
 sensor reading. The backend contract never includes USB, RS-485, Modbus addresses or controller
